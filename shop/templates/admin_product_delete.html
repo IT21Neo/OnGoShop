@@ -1,21 +1,24 @@
 {% extends 'base.html' %}
-{% block title %}ลบสินค้า | OnGoShop{% endblock %}
+{% block title %}Delete Product | OnGoShop{% endblock %}
 {% block content %}
-<h1 class="title">ลบสินค้า</h1>
-
-<div class="notification is-danger">
-  ต้องการลบสินค้านี้จริงหรือไม่: <strong>{{ product.name }}</strong> ?
-</div>
-
-<form method="POST">
-  {% csrf_token %}
-  <div class="field is-grouped">
-    <div class="control">
-      <input type="submit" value="ลบสินค้า" class="button is-danger">
+<section class="section">
+  <div class="container">
+    <h1 class="title has-text-danger">ลบสินค้า</h1>
+    <div class="notification is-danger">
+      ต้องการลบสินค้า <strong>{{ product.name }}</strong> ใช่หรือไม่?
     </div>
-    <div class="control">
-      <a href="{% url 'shop:admin_product_list' %}" class="button is-light">ยกเลิก</a>
-    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="field is-grouped">
+        <div class="control">
+          <button type="submit" class="button is-danger">Confirm Delete</button>
+        </div>
+        <div class="control">
+          <a href="{% url 'shop:admin_product_list' %}" class="button is-light">Cancel</a>
+        </div>
+      </div>
+    </form>
   </div>
-</form>
+</section>
 {% endblock %}

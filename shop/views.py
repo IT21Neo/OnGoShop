@@ -2,12 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db import transaction
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from .forms import RegisterForm, LoginForm
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
-from .models import Product, Cart, CartItem, Order, OrderItem, Payment
-from .forms import GuestCheckoutForm, ProductForm
-from django.contrib.auth.decorators import user_passes_test
+from shop.forms import RegisterForm, LoginForm, ProductForm, GuestCheckoutForm
+from shop.models import Product, Cart, CartItem, Order, OrderItem, Payment
+
 
 # ตรวจสิทธิ์ admin
 def admin_check(user):
@@ -174,8 +173,9 @@ def add_to_cart(request):
         product = Product.objects.get(id=product_id)
 
         if request.user.is_authenticated:
+            cart = _get_cart(request.user)
             cart_item, created = CartItem.objects.get_or_create(
-                user=request.user,
+                cart=cart,
                 product=product,
                 defaults={'quantity': quantity}
             )
@@ -189,25 +189,15 @@ def add_to_cart(request):
 
     return redirect('shop:product_list')
 
+
 # แสดงตะกร้า
+@login_required(login_url='shop:login')
 def view_cart(request):
-    items = []
-    total = 0
-    if request.user.is_authenticated:
-        cart = _get_cart(request.user)
-        for it in cart.items.select_related('product'):
-            subtotal = it.quantity * it.product.price
-            items.append({'product': it.product, 'quantity': it.quantity, 'subtotal': subtotal})
-            total += subtotal
-    else:
-        session_cart = request.session.get('cart', {})
-        products = Product.objects.filter(id__in=[int(pid) for pid in session_cart.keys()])
-        for p in products:
-            q = session_cart[str(p.id)]
-            subtotal = q * p.price
-            items.append({'product': p, 'quantity': q, 'subtotal': subtotal})
-            total += subtotal
+    cart = _get_cart(request.user)
+    items = cart.items.select_related('product')
+    total = sum(it.product.price * it.quantity for it in items)
     return render(request, 'cart.html', {'items': items, 'total': total})
+
 
 # ลบสินค้า
 def remove_from_cart(request):
@@ -250,8 +240,18 @@ def my_order_detail(request, order_id):
     return render(request, 'my_order_detail.html', {'order': order})
 
 # Checkout
+@login_required(login_url='shop:login')
 @transaction.atomic
 def checkout(request):
+    cart = _get_cart(request.user)
+    items = cart.items.select_related('product')
+
+    if not items.exists():
+        messages.warning(request, "ตะกร้าของคุณว่างเปล่า")
+        return redirect('shop:cart')
+
+    total = sum(it.product.price * it.quantity for it in items)
+
     if request.method == 'POST':
         form = GuestCheckoutForm(request.POST)
         if form.is_valid():
@@ -260,42 +260,43 @@ def checkout(request):
             address = form.cleaned_data['address_line']
             method = form.cleaned_data['payment_method']
 
-            items = []
-            total = 0
-            if request.user.is_authenticated:
-                cart = _get_cart(request.user)
-                for it in cart.items.select_related('product'):
-                    items.append((it.product, it.quantity))
-                    total += it.quantity * it.product.price
-            else:
-                session_cart = request.session.get('cart', {})
-                products = Product.objects.filter(id__in=[int(pid) for pid in session_cart.keys()])
-                for p in products:
-                    q = session_cart[str(p.id)]
-                    items.append((p, q))
-                    total += q * p.price
+            # ✅ สร้าง Order
+            order = Order.objects.create(user=request.user, total_price=total)
 
-            order = Order.objects.create(
-                user=request.user if request.user.is_authenticated else None,
-                total_price=total
+            # ✅ บันทึกรายการสินค้า
+            for it in items:
+                OrderItem.objects.create(
+                    order=order,
+                    product=it.product,
+                    quantity=it.quantity,
+                    unit_price=it.product.price
+                )
+                # ตัด stock
+                it.product.stock = max(0, it.product.stock - it.quantity)
+                it.product.save()
+
+            # ✅ สร้าง Payment
+            Payment.objects.create(
+                order=order,
+                amount=total,
+                method=method,
+                status='pending'
             )
-            for p, q in items:
-                OrderItem.objects.create(order=order, product=p, quantity=q, unit_price=p.price)
-                p.stock = max(0, p.stock - q)
-                p.save()
 
-            Payment.objects.create(order=order, amount=total, method=method, status='pending')
+            # ✅ เคลียร์ตะกร้า
+            items.delete()
 
-            if request.user.is_authenticated:
-                cart.items.all().delete()
-            else:
-                request.session['cart'] = {}
-
-            messages.success(request, "สั่งซื้อสำเร็จแล้ว")
-            return redirect('shop:order_success')
+            messages.success(request, f"สั่งซื้อสำเร็จแล้ว! หมายเลขคำสั่งซื้อ #{order.id}")
+            return redirect('shop:my_orders')
     else:
         form = GuestCheckoutForm()
-    return render(request, 'checkout.html', {'form': form})
+
+    return render(request, 'checkout.html', {
+        'form': form,
+        'cart_items': items,
+        'total_price': total
+    })
+
 
 def order_success(request):
     return render(request, 'order_success.html')

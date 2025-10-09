@@ -1,52 +1,56 @@
 {% extends 'base.html' %}
 {% block title %}{{ title }} | OnGoShop{% endblock %}
 {% block content %}
-<h1 class="title">{{ title }}</h1>
+<section class="section">
+  <div class="container">
+    <h1 class="title">{{ title }}</h1>
 
-<form method="POST">
-  {% csrf_token %}
-  <div class="field">
-    <label class="label">ชื่อสินค้า</label>
-    <div class="control">
-      <input type="text" name="name" class="input" value="{{ form.name.value|default_if_none:'' }}" required>
-    </div>
-  </div>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="field">
+        <label class="label">ชื่อสินค้า</label>
+        <div class="control">
+          <input class="input" type="text" name="name" value="{{ form.name.value|default:'' }}" required>
+        </div>
+      </div>
 
-  <div class="field">
-    <label class="label">รายละเอียด</label>
-    <div class="control">
-      <textarea name="description" class="textarea">{{ form.description.value|default_if_none:'' }}</textarea>
-    </div>
-  </div>
+      <div class="field">
+        <label class="label">คำอธิบายสินค้า</label>
+        <div class="control">
+          <textarea class="textarea" name="description">{{ form.description.value|default:'' }}</textarea>
+        </div>
+      </div>
 
-  <div class="field">
-    <label class="label">ราคา</label>
-    <div class="control">
-      <input type="number" name="price" class="input" value="{{ form.price.value|default_if_none:'' }}" required>
-    </div>
-  </div>
+      <div class="field">
+        <label class="label">ราคา (฿)</label>
+        <div class="control">
+          <input class="input" type="number" name="price" value="{{ form.price.value|default:0 }}" required>
+        </div>
+      </div>
 
-  <div class="field">
-    <label class="label">จำนวนสต็อก</label>
-    <div class="control">
-      <input type="number" name="stock" class="input" value="{{ form.stock.value|default_if_none:0 }}" required>
-    </div>
-  </div>
+      <div class="field">
+        <label class="label">สต็อก</label>
+        <div class="control">
+          <input class="input" type="number" name="stock" value="{{ form.stock.value|default:0 }}" required>
+        </div>
+      </div>
 
-  <div class="field">
-    <label class="label">URL รูปภาพ</label>
-    <div class="control">
-      <input type="text" name="image_url" class="input" value="{{ form.image_url.value|default_if_none:'' }}">
-    </div>
-  </div>
+      <div class="field">
+        <label class="label">Image URL</label>
+        <div class="control">
+          <input class="input" type="text" name="image_url" value="{{ form.image_url.value|default:'' }}">
+        </div>
+      </div>
 
-  <div class="field is-grouped mt-3">
-    <div class="control">
-      <button type="submit" class="button is-link">บันทึก</button>
-    </div>
-    <div class="control">
-      <a href="{% url 'shop:admin_product_list' %}" class="button is-light">ยกเลิก</a>
-    </div>
+      <div class="field is-grouped mt-4">
+        <div class="control">
+          <button type="submit" class="button is-success">บันทึก</button>
+        </div>
+        <div class="control">
+          <a href="{% url 'shop:admin_product_list' %}" class="button is-light">ยกเลิก</a>
+        </div>
+      </div>
+    </form>
   </div>
-</form>
+</section>
 {% endblock %}

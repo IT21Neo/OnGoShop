@@ -1,47 +1,50 @@
 {% extends 'base.html' %}
-{% block title %}ชำระเงิน | OnGoShop{% endblock %}
+{% block title %}Checkout | OnGoShop{% endblock %}
 {% block content %}
-<h1 class="title">ข้อมูลการสั่งซื้อ</h1>
+<h1 class="title">Checkout (ชำระเงิน)</h1>
 
-<form action="{% url 'shop:checkout' %}" method="POST">
+<form method="POST" class="box">
   {% csrf_token %}
   <div class="field">
-    <label class="label">ชื่อผู้รับสินค้า</label>
+    <label class="label">ชื่อผู้รับ (Receiver Name)</label>
     <div class="control">
       <input class="input" type="text" name="receiver_name" required>
     </div>
   </div>
 
   <div class="field">
-    <label class="label">เบอร์โทรศัพท์</label>
+    <label class="label">เบอร์โทรศัพท์ (Phone)</label>
     <div class="control">
       <input class="input" type="text" name="phone" required>
     </div>
   </div>
 
   <div class="field">
-    <label class="label">ที่อยู่จัดส่ง</label>
+    <label class="label">ที่อยู่จัดส่ง (Address)</label>
     <div class="control">
-      <textarea class="textarea" name="address_line" placeholder="กรอกที่อยู่" required></textarea>
+      <textarea class="textarea" name="address_line" required></textarea>
     </div>
   </div>
 
   <div class="field">
-    <label class="label">วิธีการชำระเงิน</label>
-    <div class="control select">
-      <select name="payment_method" required>
-        <option value="transfer">โอนเงิน</option>
-        <option value="cash">ชำระปลายทาง</option>
-      </select>
+    <label class="label">วิธีการชำระเงิน (Payment Method)</label>
+    <div class="control">
+      <div class="select">
+        <select name="payment_method">
+          <option value="credit_card">Credit Card</option>
+          <option value="transfer">Bank Transfer</option>
+          <option value="cash">Cash on Delivery</option>
+        </select>
+      </div>
     </div>
   </div>
 
-  <div class="field is-grouped mt-4">
+  <div class="field is-grouped mt-5">
     <div class="control">
-      <input type="submit" value="ยืนยันการสั่งซื้อ" class="button is-link">
+      <button type="submit" class="button is-link">Confirm Order (ยืนยันสั่งซื้อ)</button>
     </div>
     <div class="control">
-      <a href="{% url 'shop:cart' %}" class="button is-light">ย้อนกลับ</a>
+      <a href="{% url 'shop:cart' %}" class="button is-light">Back to Cart</a>
     </div>
   </div>
 </form>

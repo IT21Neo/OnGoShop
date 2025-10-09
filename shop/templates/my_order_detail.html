@@ -1,43 +1,39 @@
 {% extends 'base.html' %}
-{% block title %}รายละเอียดคำสั่งซื้อ #{{ order.id }} | OnGoShop{% endblock %}
+{% block title %}Order Detail | OnGoShop{% endblock %}
 {% block content %}
-<h1 class="title">รายละเอียดคำสั่งซื้อ #{{ order.id }}</h1>
+<section class="section">
+  <div class="container">
+    <h1 class="title">Order #{{ order.id }}</h1>
 
-<div class="box">
-  <p><strong>วันที่สั่งซื้อ:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
-  <p><strong>ยอดรวมทั้งหมด:</strong> {{ order.total_price }} บาท</p>
-  <p><strong>สถานะ:</strong> 
-    {% if order.payment.status == "pending" %}
-      <span class="tag is-warning">รอดำเนินการ</span>
-    {% elif order.payment.status == "paid" %}
-      <span class="tag is-success">ชำระแล้ว</span>
-    {% else %}
-      <span class="tag is-light">ไม่ทราบสถานะ</span>
-    {% endif %}
-  </p>
-</div>
+    <div class="box">
+      <p><strong>วันที่สั่งซื้อ:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+      <p><strong>สถานะ:</strong> {{ order.status }}</p>
+      <p><strong>ยอดรวม:</strong> {{ order.total_price }} ฿</p>
+    </div>
 
-<h2 class="subtitle">รายการสินค้า</h2>
-<table class="table is-fullwidth">
-  <thead>
-    <tr>
-      <th>สินค้า</th>
-      <th>จำนวน</th>
-      <th>ราคาต่อชิ้น</th>
-      <th>รวม</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for item in order.items.all %}
-    <tr>
-      <td>{{ item.product.name }}</td>
-      <td>{{ item.quantity }}</td>
-      <td>{{ item.unit_price }}</td>
-      <td>{{ item.quantity|add:0|floatformat:0|floatformat:"g" | default_if_none:0 * item.unit_price }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    <h2 class="subtitle">รายการสินค้า</h2>
+    <table class="table is-fullwidth is-striped">
+      <thead>
+        <tr>
+          <th>สินค้า</th>
+          <th>จำนวน</th>
+          <th>ราคาต่อชิ้น</th>
+          <th>ราคารวม</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order.items.all %}
+        <tr>
+          <td>{{ item.product.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.unit_price }} ฿</td>
+          <td>{{ item.quantity|add:0|floatformat:0|add:item.unit_price }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
-<a href="{% url 'shop:my_orders' %}" class="button is-light mt-3">ย้อนกลับ</a>
+    <a href="{% url 'shop:my_orders' %}" class="button is-light mt-3">Back to My Orders</a>
+  </div>
+</section>
 {% endblock %}

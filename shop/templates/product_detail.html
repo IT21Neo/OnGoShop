@@ -1,53 +1,35 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ product.name }} | OnGoShop</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}รายละเอียดสินค้า | OnGoShop{% endblock %}
+{% block content %}
 <section class="section">
   <div class="container">
-    <h1 class="title">{{ product.name }}</h1>
     <div class="columns">
       <div class="column is-half">
-        <figure class="image is-3by2">
+        <figure class="image is-4by3">
           <img src="{{ product.image_url|default:'/static/shop/img/placeholder.png' }}" alt="{{ product.name }}">
         </figure>
       </div>
-      <div class="column is-half">
-        <p class="subtitle">ราคา: {{ product.price }} ฿</p>
-        <p>คงเหลือในสต็อก: {{ product.stock }}</p>
-        <p>{{ product.description }}</p>
 
-        <hr>
+      <div class="column">
+        <h1 class="title">{{ product.name }}</h1>
+        <p class="subtitle has-text-link">{{ product.price }} ฿</p>
+        <p class="mb-5">{{ product.description|default:"ไม่มีรายละเอียดสินค้า" }}</p>
 
-        {% if product.stock > 0 %}
-        <form action="{% url 'shop:add_to_cart' %}" method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="product_id" value="{{ product.id }}">
-            <div class="field is-grouped">
-              <div class="control">
-                <input class="input" type="number" name="quantity" value="1" min="1">
-              </div>
-              <div class="control">
-                <input type="submit" class="button is-link" value="เพิ่มลงตะกร้า">
-              </div>
+        <form method="POST" action="{% url 'shop:add_to_cart' %}">
+          {% csrf_token %}
+          <input type="hidden" name="product_id" value="{{ product.id }}">
+          <div class="field has-addons">
+            <div class="control">
+              <input class="input" type="number" name="quantity" value="1" min="1">
             </div>
+            <div class="control">
+              <button type="submit" class="button is-link is-light">Add to Cart (เพิ่มลงตะกร้า)</button>
+            </div>
+          </div>
         </form>
-        {% else %}
-          <button class="button is-static is-light">สินค้าหมด</button>
-        {% endif %}
-
-        <br>
-        <a class="button is-danger" href="{% url 'shop:product_list' %}">ย้อนกลับ</a>
+        <a href="{% url 'shop:product_list' %}" class="button is-small is-light mt-4">← Back to Products</a>
       </div>
     </div>
   </div>
 </section>
-</body>
-</html>
+{% endblock %}

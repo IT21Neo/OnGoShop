@@ -1,35 +1,41 @@
 {% extends 'base.html' %}
-{% block title %}จัดการสินค้า | OnGoShop{% endblock %}
+{% block title %}Admin - Manage Products | OnGoShop{% endblock %}
 {% block content %}
-<h1 class="title">จัดการสินค้า</h1>
+<section class="section">
+  <div class="container">
+    <h1 class="title">จัดการสินค้า (Manage Products)</h1>
 
-<a href="{% url 'shop:admin_product_add' %}" class="button is-link mb-3">+ เพิ่มสินค้าใหม่</a>
+    <a href="{% url 'shop:admin_product_add' %}" class="button is-primary mb-3">+ เพิ่มสินค้าใหม่</a>
 
-<table class="table is-fullwidth is-striped">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>ชื่อสินค้า</th>
-      <th>ราคา</th>
-      <th>คงเหลือ</th>
-      <th>จัดการ</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for p in products %}
-      <tr>
-        <td>{{ p.id }}</td>
-        <td>{{ p.name }}</td>
-        <td>{{ p.price }}</td>
-        <td>{{ p.stock }}</td>
-        <td>
-          <a href="{% url 'shop:admin_product_edit' p.id %}" class="button is-small is-info">แก้ไข</a>
-          <a href="{% url 'shop:admin_product_delete' p.id %}" class="button is-small is-danger">ลบ</a>
-        </td>
-      </tr>
-    {% empty %}
-      <tr><td colspan="5">ยังไม่มีสินค้า</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+    {% if products %}
+      <table class="table is-fullwidth is-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>ชื่อสินค้า</th>
+            <th>ราคา</th>
+            <th>สต็อก</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.price }} ฿</td>
+            <td>{{ p.stock }}</td>
+            <td>
+              <a href="{% url 'shop:admin_product_edit' p.id %}" class="button is-small is-info is-light">Edit</a>
+              <a href="{% url 'shop:admin_product_delete' p.id %}" class="button is-small is-danger is-light">Delete</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="notification is-warning">ยังไม่มีสินค้าในระบบ</div>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}
