@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}ลบสินค้า | OnGoShop{% endblock %}
+{% block content %}
+<h1 class="title">ลบสินค้า</h1>
+
+<div class="notification is-danger">
+  ต้องการลบสินค้านี้จริงหรือไม่: <strong>{{ product.name }}</strong> ?
+</div>
+
+<form method="POST">
+  {% csrf_token %}
+  <div class="field is-grouped">
+    <div class="control">
+      <input type="submit" value="ลบสินค้า" class="button is-danger">
+    </div>
+    <div class="control">
+      <a href="{% url 'shop:admin_product_list' %}" class="button is-light">ยกเลิก</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

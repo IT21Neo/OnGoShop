@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}สินค้าทั้งหมด | OnGoShop{% endblock %}
+{% block content %}
+<h1 class="title">รายการสินค้า</h1>
+
+<!-- 🔍 แถบค้นหา + เรียงลำดับ -->
+<form method="get" action="{% url 'shop:product_list' %}" class="mb-5">
+  <div class="columns is-vcentered">
+    <div class="column is-4">
+      <input class="input" type="search" name="q" value="{{ request.GET.q }}" placeholder="ค้นหาสินค้า...">
+    </div>
+    <div class="column is-3">
+      <div class="select is-fullwidth">
+        <select name="sort" onchange="this.form.submit()">
+          <option value="">-- เรียงตาม --</option>
+          <option value="price_low" {% if request.GET.sort == 'price_low' %}selected{% endif %}>ราคาต่ำสุด</option>
+          <option value="price_high" {% if request.GET.sort == 'price_high' %}selected{% endif %}>ราคาสูงสุด</option>
+          <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>สินค้าใหม่ล่าสุด</option>
+          <option value="oldest" {% if request.GET.sort == 'oldest' %}selected{% endif %}>สินค้าเก่าที่สุด</option>
+        </select>
+      </div>
+    </div>
+    <div class="column">
+      <button class="button is-link">ค้นหา</button>
+    </div>
+  </div>
+</form>
+
+{% if products %}
+  <div class="columns is-multiline">
+    {% for p in products %}
+      <div class="column is-one-quarter">
+        <div class="card">
+          <div class="card-image">
+            <figure class="image is-4by3">
+              <img src="{{ p.image_url|default:'/static/shop/img/placeholder.png' }}" alt="{{ p.name }}">
+            </figure>
+          </div>
+          <div class="card-content">
+            <p class="title is-6">{{ p.name }}</p>
+            <p class="subtitle is-6 has-text-link">{{ p.price }} ฿</p>
+
+            <!-- ฟอร์มเพิ่มลงตะกร้า -->
+            <form action="{% url 'shop:add_to_cart' %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="product_id" value="{{ p.id }}">
+              <div class="field has-addons">
+                <div class="control is-expanded">
+                  <input class="input" type="number" name="quantity" value="1" min="1">
+                </div>
+                <div class="control">
+                  <button type="submit" class="button is-link is-light">เพิ่มลงตะกร้า</button>
+                </div>
+              </div>
+            </form>
+
+            <a href="{% url 'shop:product_detail' p.id %}" class="button is-small is-info is-light mt-2">ดูรายละเอียด</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="notification is-warning">ไม่พบสินค้า</div>
+{% endif %}
+{% endblock %}

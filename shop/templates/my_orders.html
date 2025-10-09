@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}คำสั่งซื้อของฉัน | OnGoShop{% endblock %}
+{% block content %}
+<h1 class="title">คำสั่งซื้อของฉัน</h1>
+
+{% if orders %}
+  <table class="table is-fullwidth is-striped">
+    <thead>
+      <tr>
+        <th>หมายเลขคำสั่งซื้อ</th>
+        <th>วันที่สั่ง</th>
+        <th>ยอดรวม (บาท)</th>
+        <th>สถานะ</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td>#{{ order.id }}</td>
+        <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
+        <td>{{ order.total_price }}</td>
+        <td>
+          {% if order.payment.status == "pending" %}
+            <span class="tag is-warning">รอดำเนินการ</span>
+          {% elif order.payment.status == "paid" %}
+            <span class="tag is-success">ชำระแล้ว</span>
+          {% else %}
+            <span class="tag is-light">ไม่ทราบสถานะ</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="{% url 'shop:my_order_detail' order.id %}" class="button is-small is-link is-light">ดูรายละเอียด</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="notification is-info">
+    คุณยังไม่มีคำสั่งซื้อในระบบ
+  </div>
+{% endif %}
+{% endblock %}

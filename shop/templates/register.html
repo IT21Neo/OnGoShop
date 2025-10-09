@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}สมัครสมาชิก | OnGoShop{% endblock %}
+{% block content %}
+<h1 class="title">สมัครสมาชิก</h1>
+
+<form method="POST" action="{% url 'shop:register' %}">
+  {% csrf_token %}
+  <div class="field">
+    <label class="label">ชื่อผู้ใช้</label>
+    <div class="control">
+      <input type="text" name="username" class="input" required>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="label">อีเมล</label>
+    <div class="control">
+      <input type="email" name="email" class="input">
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="label">รหัสผ่าน</label>
+    <div class="control">
+      <input type="password" name="password" class="input" required>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="label">ยืนยันรหัสผ่าน</label>
+    <div class="control">
+      <input type="password" name="confirm_password" class="input" required>
+    </div>
+  </div>
+
+  <div class="field is-grouped mt-3">
+    <div class="control">
+      <input type="submit" value="สมัครสมาชิก" class="button is-link">
+    </div>
+    <div class="control">
+      <a href="{% url 'shop:login' %}" class="button is-light">เข้าสู่ระบบ</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

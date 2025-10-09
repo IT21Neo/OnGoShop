@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}OnGoShop{% endblock %}</title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
+  >
+</head>
+<body>
+  <nav class="navbar is-link" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item has-text-weight-bold" href="{% url 'shop:product_list' %}">
+        🛒 OnGoShop
+      </a>
+    </div>
+
+    <div class="navbar-menu">
+      <div class="navbar-start">
+        <a class="navbar-item" href="{% url 'shop:product_list' %}">หน้าแรก</a>
+        <a class="navbar-item" href="{% url 'shop:cart' %}">ตะกร้า</a>
+      </div>
+
+      <div class="navbar-end">
+        {% if user.is_authenticated %}
+            {% if user.is_staff %}
+                <div class="navbar-item">
+                    <a class="button is-warning is-light" href="{% url 'shop:admin_product_list' %}">จัดการสินค้า</a>
+                </div>
+            {% endif %}
+            <div class="navbar-item">
+                <a class="button is-light" href="{% url 'shop:my_orders' %}">คำสั่งซื้อของฉัน</a>
+            </div>
+            <div class="navbar-item">
+                <p>👋 {{ user.username }}</p>
+            </div>
+            <div class="navbar-item">
+                <a class="button is-light" href="{% url 'shop:logout' %}">ออกจากระบบ</a>
+            </div>
+        {% else %}
+            <div class="navbar-item">
+                <a class="button is-light" href="{% url 'shop:login' %}">เข้าสู่ระบบ</a>
+            </div>
+            <div class="navbar-item">
+                <a class="button is-link" href="{% url 'shop:register' %}">สมัครสมาชิก</a>
+            </div>
+        {% endif %}
+      </div>
+        <div class="navbar-item">
+          <form action="{% url 'shop:product_list' %}" method="get">
+            <div class="field has-addons">
+              <div class="control">
+                <input class="input" type="search" name="q" placeholder="ค้นหาสินค้า...">
+              </div>
+              <div class="control">
+                <button class="button is-light">ค้นหา</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <section class="section">
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="notification is-danger">{{ message }}</div>
+                {% elif message.tags == 'success' %}
+                    <div class="notification is-success">{{ message }}</div>
+                {% elif message.tags == 'info' %}
+                    <div class="notification is-info">{{ message }}</div>
+                {% else %}
+                    <div class="notification">{{ message }}</div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+  </section>
+
+  <footer class="footer has-text-centered">
+    <p>© 2025 OnGoShop — ระบบ E-commerce</p>
+  </footer>
+</body>
+</html>

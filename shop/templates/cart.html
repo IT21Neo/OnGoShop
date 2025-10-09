@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}ตะกร้าสินค้า | OnGoShop{% endblock %}
+{% block content %}
+<h1 class="title">ตะกร้าสินค้า</h1>
+
+{% if items %}
+<table class="table is-striped is-fullwidth">
+  <thead>
+    <tr>
+      <th>สินค้า</th>
+      <th>จำนวน</th>
+      <th>ราคา</th>
+      <th>รวม</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for it in items %}
+    <tr>
+      <td>{{ it.product.name }}</td>
+      <td>{{ it.quantity }}</td>
+      <td>{{ it.product.price }}</td>
+      <td>{{ it.subtotal }}</td>
+      <td>
+        <form action="{% url 'shop:remove_from_cart' %}" method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="product_id" value="{{ it.product.id }}">
+          <input type="submit" value="ลบ" class="button is-danger is-small">
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="notification is-info">
+  ยอดรวมทั้งหมด : <strong>{{ total }} ฿</strong>
+</div>
+
+<a href="{% url 'shop:checkout' %}" class="button is-link">ไปชำระเงิน</a>
+{% else %}
+  <div class="notification is-warning">ตะกร้าสินค้าว่างเปล่า</div>
+{% endif %}
+{% endblock %}

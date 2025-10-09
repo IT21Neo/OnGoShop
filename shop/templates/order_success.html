@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}สั่งซื้อสำเร็จ | OnGoShop{% endblock %}
+{% block content %}
+<div class="notification is-success">
+  <h1 class="title">ขอบคุณสำหรับการสั่งซื้อ!</h1>
+  <p>ระบบได้รับคำสั่งซื้อของคุณเรียบร้อยแล้ว</p>
+</div>
+
+<a href="{% url 'shop:product_list' %}" class="button is-link">กลับไปหน้าหลัก</a>
+{% endblock %}
