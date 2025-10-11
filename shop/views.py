@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.conf import settings
 from django.db.models import Q
 from shop.forms import RegisterForm, LoginForm, ProductForm, GuestCheckoutForm
 from shop.models import Product, Cart, CartItem, Order, OrderItem, Payment
@@ -65,42 +66,59 @@ def admin_product_delete(request, pk):
     return render(request, 'admin_product_delete.html', {'product': product})
 
 
-
 # สมัครสมาชิก
 def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password'])
+            password = form.cleaned_data.get('password')
+            user.set_password(password)
             user.save()
             messages.success(request, "สมัครสมาชิกสำเร็จแล้ว! โปรดเข้าสู่ระบบ")
             return redirect('shop:login')
         else:
-            messages.error(request, "เกิดข้อผิดพลาดในการสมัครสมาชิก")
+            # form invalid -> render with errors
+            messages.error(request, "เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาตรวจสอบข้อมูล")
     else:
         form = RegisterForm()
     return render(request, 'register.html', {'form': form})
 
 # เข้าสู่ระบบ
 def login_view(request):
+    initial_username = request.COOKIES.get('remember_username', '')
+
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
+            remember_me = request.POST.get('remember_me') == 'on'
+
+            user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
+
+                if remember_me:
+                    request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+                else:
+                    request.session.set_expiry(0)
+                response = redirect('shop:product_list')
+                if remember_me:
+                    max_age = 30 * 24 * 60 * 60
+                    response.set_cookie('remember_username', username, max_age=max_age, httponly=False)
+                else:
+                    response.delete_cookie('remember_username')
+
                 messages.success(request, f"ยินดีต้อนรับ {username}!")
-                return redirect('shop:product_list')
+                return response
             else:
                 messages.error(request, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
         else:
             messages.error(request, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
     else:
         form = LoginForm()
-    return render(request, 'login.html', {'form': form})
+    return render(request, 'login.html', {'form': form, 'initial_username': initial_username})
 
 # ออกจากระบบ
 def logout_view(request):

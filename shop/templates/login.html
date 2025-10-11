@@ -1,31 +1,68 @@
 {% extends 'base.html' %}
-{% block title %}เข้าสู่ระบบ | OnGoShop{% endblock %}
+{% block title %}Login (เข้าสู่ระบบ) | OnGoShop{% endblock %}
+
 {% block content %}
-<h1 class="title">เข้าสู่ระบบ</h1>
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-5-tablet is-4-desktop">
+        <div class="box" style="border-radius:8px; box-shadow: 0 6px 18px rgba(124,58,237,0.08);">
+          <h2 class="title has-text-centered" style="color:#7c3aed;">Login</h2>
 
-<form method="POST" action="{% url 'shop:login' %}">
-  {% csrf_token %}
-  <div class="field">
-    <label class="label">ชื่อผู้ใช้</label>
-    <div class="control">
-      <input type="text" name="username" class="input" required>
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+              <div class="notification is-danger">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            <div class="field">
+              <label class="label">Username</label>
+              <div class="control">
+                <input class="input" type="text" name="username"
+                       value="{{ initial_username|default:form.username.value|default:'' }}"
+                       placeholder="Enter your username" required>
+              </div>
+              {% if form.username.errors %}
+                <p class="help is-danger">{{ form.username.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div class="field">
+              <label class="label">Password</label>
+              <div class="control">
+                <input class="input" type="password" name="password" placeholder="Enter your password" required>
+              </div>
+              {% if form.password.errors %}
+                <p class="help is-danger">{{ form.password.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div class="field is-flex is-justify-content-space-between is-align-items-center">
+              <label class="checkbox">
+                <input type="checkbox" name="remember_me">
+                Remember me
+              </label>
+            </div>
+
+            <div class="field mt-4">
+              <div class="control">
+                <button type="submit"
+                        class="button is-fullwidth"
+                        style="background: linear-gradient(90deg,#7c3aed,#b06cfb); color:white; border:none;">
+                  Login
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <p class="has-text-centered is-size-7 mt-3">Don't have an account?
+            <a href="{% url 'shop:register' %}">Create one</a>
+          </p>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="field">
-    <label class="label">รหัสผ่าน</label>
-    <div class="control">
-      <input type="password" name="password" class="input" required>
-    </div>
-  </div>
-
-  <div class="field is-grouped mt-3">
-    <div class="control">
-      <input type="submit" value="เข้าสู่ระบบ" class="button is-link">
-    </div>
-    <div class="control">
-      <a href="{% url 'shop:register' %}" class="button is-light">สมัครสมาชิก</a>
-    </div>
-  </div>
-</form>
+</section>
 {% endblock %}

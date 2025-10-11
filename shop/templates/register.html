@@ -1,45 +1,66 @@
 {% extends 'base.html' %}
-{% block title %}สมัครสมาชิก | OnGoShop{% endblock %}
+{% block title %}Register (ลงทะเบียน) | OnGoShop{% endblock %}
+
 {% block content %}
-<h1 class="title">สมัครสมาชิก</h1>
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-5-tablet is-4-desktop">
+        <div class="box">
+          <h2 class="title has-text-centered" style="color:#7c3aed;">Create account</h2>
 
-<form method="POST" action="{% url 'shop:register' %}">
-  {% csrf_token %}
-  <div class="field">
-    <label class="label">ชื่อผู้ใช้</label>
-    <div class="control">
-      <input type="text" name="username" class="input" required>
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+              <div class="notification is-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="field">
+              <label class="label">Username</label>
+              <div class="control">
+                <input class="input" type="text" name="username" value="{{ form.username.value|default:'' }}" required>
+              </div>
+              {% if form.username.errors %}
+                <p class="help is-danger">{{ form.username.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div class="field">
+              <label class="label">Password</label>
+              <div class="control">
+                <input class="input" type="password" name="password" required>
+              </div>
+              {% if form.password.errors %}
+                <p class="help is-danger">{{ form.password.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div class="field">
+              <label class="label">Confirm Password</label>
+              <div class="control">
+                <input class="input" type="password" name="confirm_password" required>
+              </div>
+              {% if form.confirm_password.errors %}
+                <p class="help is-danger">{{ form.confirm_password.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div class="field is-grouped mt-4">
+              <div class="control is-expanded">
+                <button type="submit" class="button is-fullwidth"
+                        style="background: linear-gradient(90deg,#7c3aed,#b06cfb); color:white; border:none;">
+                  Register
+                </button>
+              </div>
+              <div class="control">
+                <a href="{% url 'shop:login' %}" class="button is-light">Back</a>
+              </div>
+            </div>
+          </form>
+
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="field">
-    <label class="label">อีเมล</label>
-    <div class="control">
-      <input type="email" name="email" class="input">
-    </div>
-  </div>
-
-  <div class="field">
-    <label class="label">รหัสผ่าน</label>
-    <div class="control">
-      <input type="password" name="password" class="input" required>
-    </div>
-  </div>
-
-  <div class="field">
-    <label class="label">ยืนยันรหัสผ่าน</label>
-    <div class="control">
-      <input type="password" name="confirm_password" class="input" required>
-    </div>
-  </div>
-
-  <div class="field is-grouped mt-3">
-    <div class="control">
-      <input type="submit" value="สมัครสมาชิก" class="button is-link">
-    </div>
-    <div class="control">
-      <a href="{% url 'shop:login' %}" class="button is-light">เข้าสู่ระบบ</a>
-    </div>
-  </div>
-</form>
+</section>
 {% endblock %}
