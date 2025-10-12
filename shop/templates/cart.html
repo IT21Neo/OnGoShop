@@ -1,41 +1,57 @@
 {% extends 'base.html' %}
 {% block title %}ตะกร้าสินค้า | OnGoShop{% endblock %}
 {% block content %}
-<h1 class="title">Shopping Cart (ตะกร้าสินค้า)</h1>
+<h1 class="title has-text-light">🛍️ ตะกร้าสินค้า</h1>
 
 {% if items %}
-  <table class="table is-striped is-fullwidth">
-    <thead>
-      <tr>
-        <th>สินค้า</th>
-        <th>จำนวน</th>
-        <th>ราคารวม</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in items %}
-      <tr>
-        <td>{{ item.product.name }}</td>
-        <td>{{ item.quantity }}</td>
-        <td>{{ item.subtotal }} ฿</td>
-        <td>
-          <form method="POST" action="{% url 'shop:remove_from_cart' %}">
-            {% csrf_token %}
-            <input type="hidden" name="product_id" value="{{ item.product.id }}">
-            <button type="submit" class="button is-small is-danger is-light">Remove</button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table class="table is-fullwidth is-striped is-hoverable has-text-centered">
+      <thead>
+        <tr class="has-background-link-dark has-text-white">
+          <th>สินค้า</th>
+          <th>จำนวน</th>
+          <th>ราคา/หน่วย</th>
+          <th>รวม</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for it in items %}
+        <tr>
+          <td>{{ it.product.name }}</td>
+          <td>
+            <form action="{% url 'shop:update_cart' %}" method="POST" class="is-inline">
+              {% csrf_token %}
+              <input type="hidden" name="product_id" value="{{ it.product.id }}">
+              <div class="buttons has-addons is-centered">
+                <button name="action" value="decrease" class="button is-small is-dark">-</button>
+                <span class="button is-small is-static">{{ it.quantity }}</span>
+                <button name="action" value="increase" class="button is-small is-dark">+</button>
+              </div>
+            </form>
+          </td>
+          <td>{{ it.product.price }} ฿</td>
+          <td>{{ it.subtotal }} ฿</td>
+          <td>
+            <form action="{% url 'shop:remove_from_cart' %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="product_id" value="{{ it.product.id }}">
+              <button type="submit" class="button is-danger is-light">
+                🗑️
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
   <div class="has-text-right">
-    <p class="is-size-5 mb-3"><strong>Total (รวมทั้งหมด):</strong> {{ total }} ฿</p>
-    <a href="{% url 'shop:checkout' %}" class="button is-link is-medium">Checkout (ชำระเงิน)</a>
+    <h2 class="title is-5 has-text-white">ยอดรวมทั้งหมด: {{ total }} ฿</h2>
+    <a href="{% url 'shop:checkout' %}" class="button is-magenta is-medium">ดำเนินการสั่งซื้อ</a>
   </div>
 {% else %}
-  <div class="notification is-warning">Your cart is empty (ไม่มีสินค้าในตะกร้า)</div>
+  <div class="notification is-warning">ยังไม่มีสินค้าในตะกร้า</div>
 {% endif %}
 {% endblock %}

@@ -3,9 +3,10 @@ from django.contrib import messages
 from django.db import transaction
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.db.models import Q
-from shop.forms import RegisterForm, LoginForm, ProductForm, GuestCheckoutForm
+from shop.forms import RegisterForm, AuthenticationForm, ProductForm, GuestCheckoutForm
 from shop.models import Product, Cart, CartItem, Order, OrderItem, Payment
 
 
@@ -86,39 +87,23 @@ def register_view(request):
 
 # เข้าสู่ระบบ
 def login_view(request):
-    initial_username = request.COOKIES.get('remember_username', '')
-
     if request.method == 'POST':
-        form = LoginForm(request, data=request.POST)
+        form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            remember_me = request.POST.get('remember_me') == 'on'
-
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-
-                if remember_me:
-                    request.session.set_expiry(settings.SESSION_COOKIE_AGE)
-                else:
-                    request.session.set_expiry(0)
-                response = redirect('shop:product_list')
-                if remember_me:
-                    max_age = 30 * 24 * 60 * 60
-                    response.set_cookie('remember_username', username, max_age=max_age, httponly=False)
-                else:
-                    response.delete_cookie('remember_username')
-
-                messages.success(request, f"ยินดีต้อนรับ {username}!")
-                return response
+            user = form.get_user()
+            login(request, user)
+            if not request.POST.get('remember_me'):
+                request.session.set_expiry(0)
             else:
-                messages.error(request, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
+                request.session.set_expiry(1209600)
+            
+            messages.success(request, f"ยินดีต้อนรับ {user.username}!")
+            return redirect('shop:product_list')
         else:
             messages.error(request, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
     else:
-        form = LoginForm()
-    return render(request, 'login.html', {'form': form, 'initial_username': initial_username})
+        form = AuthenticationForm()
+    return render(request, 'login.html', {'form': form})
 
 # ออกจากระบบ
 def logout_view(request):
@@ -231,6 +216,25 @@ def remove_from_cart(request):
                 request.session['cart'] = cart
         messages.info(request, "นำสินค้าออกจากตะกร้าแล้ว")
     return redirect('shop:cart')
+
+@require_POST
+def update_cart(request):
+    pid = request.POST.get('product_id')
+    action = request.POST.get('action')
+
+    if request.user.is_authenticated:
+        cart = _get_cart(request.user)
+        try:
+            item = cart.items.get(product_id=pid)
+            if action == "increase":
+                item.quantity += 1
+            elif action == "decrease" and item.quantity > 1:
+                item.quantity -= 1
+            item.save()
+        except CartItem.DoesNotExist:
+            pass
+    return redirect('shop:cart')
+
 
 @login_required(login_url='shop:login')
 def my_orders(request):

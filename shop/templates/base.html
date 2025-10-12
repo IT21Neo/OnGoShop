@@ -5,88 +5,180 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}OnGoShop{% endblock %}</title>
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
-  >
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+  <style>
+    :root {
+      --magenta: #8b5cf6;
+      --magenta-hover: #7c3aed;
+      --dark-bg: #121212;
+      --dark-text: #f3f3f3;
+      --light-bg: #ffffff;
+      --light-text: #1e1e1e;
+    }
+
+    body {
+      transition: all 0.3s ease;
+    }
+
+    body.dark {
+      background-color: var(--dark-bg);
+      color: var(--dark-text);
+    }
+
+    body.light {
+      background-color: var(--light-bg);
+      color: var(--light-text);
+    }
+
+    .navbar {
+      transition: background-color 0.3s ease, color 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .navbar.dark {
+      background-color: #1c1c1c;
+    }
+
+    .navbar.light {
+      background-color: #f9f9f9;
+    }
+
+    .navbar-item,
+    .navbar-link {
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    body.dark .navbar-item,
+    body.dark .navbar-link,
+    body.dark .navbar-brand span {
+      color: var(--dark-text) !important;
+    }
+
+    body.light .navbar-item,
+    body.light .navbar-link,
+    body.light .navbar-brand span {
+      color: var(--light-text) !important;
+    }
+
+    .button.is-magenta {
+      background-color: var(--magenta);
+      color: white;
+      border: none;
+      transition: background 0.2s ease;
+    }
+
+    .button.is-magenta:hover {
+      background-color: var(--magenta-hover);
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: inherit;
+      transition: background 0.2s ease;
+      border-radius: 8px;
+      padding: 6px;
+    }
+
+    .icon-btn:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    footer.footer {
+      background-color: transparent;
+      color: gray;
+    }
+  </style>
 </head>
-<body>
-  <nav class="navbar is-link" role="navigation" aria-label="main navigation">
+<body class="dark">
+  <nav id="navbar" class="navbar dark is-fixed-top px-4" role="navigation">
     <div class="navbar-brand">
-      <a class="navbar-item has-text-weight-bold" href="{% url 'shop:product_list' %}">
-        🛒 OnGoShop
+      <a class="navbar-item" href="{% url 'shop:product_list' %}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" id="logoIcon" class="bi bi-bag-check-fill" viewBox="0 0 16 16">
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4a.75.75 0 0 1-1.08 0l-2-2a.75.75 0 0 1 1.08-1.04L8 8.94l2.97-2.97z"/>
+          <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4H13a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a1 1 0 0 1 1-1h2.5v-.5A2.5 2.5 0 0 1 8 1z"/>
+        </svg>
+        <span class="ml-2 has-text-weight-bold">OnGoShop</span>
       </a>
     </div>
 
     <div class="navbar-menu">
       <div class="navbar-start">
         <a class="navbar-item" href="{% url 'shop:product_list' %}">หน้าแรก</a>
-        <a class="navbar-item" href="{% url 'shop:cart' %}">ตะกร้า</a>
+        <a href="{% url 'shop:cart' %}" class="navbar-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" id="cartIcon" class="bi bi-cart3" viewBox="0 0 16 16">
+            <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l.84 4.479 9.144-.459L13.89 4z"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="column is-4">
+      <input class="input" type="search" name="q" value="{{ request.GET.q }}" placeholder="ค้นหาสินค้า...">
       </div>
 
       <div class="navbar-end">
-        {% if user.is_authenticated %}
-            {% if user.is_staff %}
-                <div class="navbar-item">
-                    <a class="button is-warning is-light" href="{% url 'shop:admin_product_list' %}">จัดการสินค้า</a>
-                </div>
-            {% endif %}
-            <div class="navbar-item">
-                <a class="button is-light" href="{% url 'shop:my_orders' %}">คำสั่งซื้อของฉัน</a>
-            </div>
-            <div class="navbar-item">
-                <p>👋 {{ user.username }}</p>
-            </div>
-            <div class="navbar-item">
-                <a class="button is-light" href="{% url 'shop:logout' %}">ออกจากระบบ</a>
-            </div>
-        {% else %}
-            <div class="navbar-item">
-                <a class="button is-light" href="{% url 'shop:login' %}">เข้าสู่ระบบ</a>
-            </div>
-            <div class="navbar-item">
-                <a class="button is-link" href="{% url 'shop:register' %}">สมัครสมาชิก</a>
-            </div>
-        {% endif %}
-      </div>
         <div class="navbar-item">
-          <form action="{% url 'shop:product_list' %}" method="get">
-            <div class="field has-addons">
-              <div class="control">
-                <input class="input" type="search" name="q" placeholder="ค้นหาสินค้า...">
-              </div>
-              <div class="control">
-                <button class="button is-light">ค้นหา</button>
-              </div>
-            </div>
-          </form>
+          <button id="themeToggle" class="icon-btn" title="Toggle Theme">
+            <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-moon">
+              <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46 7.21 7.21 0 0 0 .878 3.46.768.768 0 0 1-.08.858 8.006 8.006 0 1 1 0-8.636z"/>
+            </svg>
+            <svg id="sun" style="display:none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-sun">
+              <path d="M8 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 8a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/>
+            </svg>
+          </button>
         </div>
+
+        {% if user.is_authenticated %}
+          <div class="navbar-item">
+            <p>👋 {{ user.username }}</p>
+          </div>
+          <div class="navbar-item">
+            <a class="button is-light" href="{% url 'shop:logout' %}">ออกจากระบบ</a>
+          </div>
+        {% else %}
+          <div class="navbar-item">
+            <a class="button is-light" href="{% url 'shop:login' %}">เข้าสู่ระบบ</a>
+          </div>
+          <div class="navbar-item">
+            <a class="button is-magenta" href="{% url 'shop:register' %}">สมัครสมาชิก</a>
+          </div>
+        {% endif %}
       </div>
     </div>
   </nav>
 
-  <section class="section">
+  <section class="section mt-6">
     <div class="container">
-        {% if messages %}
-            {% for message in messages %}
-                {% if message.tags == 'error' %}
-                    <div class="notification is-danger">{{ message }}</div>
-                {% elif message.tags == 'success' %}
-                    <div class="notification is-success">{{ message }}</div>
-                {% elif message.tags == 'info' %}
-                    <div class="notification is-info">{{ message }}</div>
-                {% else %}
-                    <div class="notification">{{ message }}</div>
-                {% endif %}
-            {% endfor %}
-        {% endif %}
-
-        {% block content %}{% endblock %}
+      {% block content %}{% endblock %}
     </div>
   </section>
 
   <footer class="footer has-text-centered">
     <p>© 2025 OnGoShop — ระบบ E-commerce</p>
   </footer>
+
+  <script>
+    const toggle = document.getElementById("themeToggle");
+    const body = document.body;
+    const navbar = document.getElementById("navbar");
+    const logoIcon = document.getElementById("logoIcon");
+    const cartIcon = document.getElementById("cartIcon");
+    const moon = document.getElementById("moon");
+    const sun = document.getElementById("sun");
+
+    toggle.addEventListener("click", () => {
+      const isDark = body.classList.contains("dark");
+      body.classList.toggle("dark", !isDark);
+      body.classList.toggle("light", isDark);
+      navbar.classList.toggle("dark", !isDark);
+      navbar.classList.toggle("light", isDark);
+      moon.style.display = isDark ? "inline" : "none";
+      sun.style.display = isDark ? "none" : "inline";
+      logoIcon.setAttribute("fill", isDark ? "#000" : "#fff");
+      cartIcon.setAttribute("fill", isDark ? "#000" : "#fff");
+    });
+  </script>
 </body>
 </html>

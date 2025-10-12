@@ -2,8 +2,6 @@
 {% block title %}สินค้าทั้งหมด | OnGoShop{% endblock %}
 {% block content %}
 <h1 class="title">รายการสินค้า</h1>
-
-<!-- 🔍 แถบค้นหา + เรียงลำดับ -->
 <form method="get" action="{% url 'shop:product_list' %}" class="mb-5">
   <div class="columns is-vcentered">
     <div class="column is-4">
@@ -39,8 +37,6 @@
           <div class="card-content">
             <p class="title is-6">{{ p.name }}</p>
             <p class="subtitle is-6 has-text-link">{{ p.price }} ฿</p>
-
-            <!-- ฟอร์มเพิ่มลงตะกร้า -->
             <form action="{% url 'shop:add_to_cart' %}" method="POST">
               {% csrf_token %}
               <input type="hidden" name="product_id" value="{{ p.id }}">
