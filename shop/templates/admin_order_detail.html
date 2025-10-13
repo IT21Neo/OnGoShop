@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.id }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="title">คำสั่งซื้อ #{{ order.id }}</h1>
+    <p><strong>ลูกค้า:</strong> {{ order.user.username if order.user else "Guest" }}</p>
+    <p><strong>รวม:</strong> {{ order.total_price }} บาท</p>
+    <p><strong>สถานะ:</strong> {{ order.get_status_display }}</p>
+
+    <h2 class="subtitle mt-4">รายการสินค้า</h2>
+    <table class="table is-fullwidth">
+      <thead><tr><th>สินค้า</th><th>จำนวน</th><th>ราคาต่อหน่วย</th></tr></thead>
+      <tbody>
+        {% for it in order.items.all %}
+          <tr>
+            <td>{{ it.product.name if it.product else "(ลบไปแล้ว)" }}</td>
+            <td>{{ it.quantity }}</td>
+            <td>{{ it.unit_price }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2 class="subtitle mt-4">อัพเดตสถานะ</h2>
+    <form method="post" style="max-width:480px;">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="field is-grouped">
+        <div class="control">
+          <button class="button is-primary" type="submit">อัพเดต</button>
+        </div>
+        <div class="control">
+          <form method="post" action="{% url 'shop:admin_order_cancel' order.id %}">
+            {% csrf_token %}
+            <button class="button is-danger" type="submit" onclick="return confirm('ยืนยันการยกเลิกคำสั่งซื้อ?')">ยกเลิก</button>
+          </form>
+        </div>
+      </div>
+    </form>
+
+    <a class="button mt-4" href="{% url 'shop:admin_order_list' %}">กลับไป</a>
+  </div>
+</section>
+{% endblock %}

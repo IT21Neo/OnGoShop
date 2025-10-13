@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
-from shop.models import Product
+from shop.models import Product, Order
 
 User = get_user_model()
 
@@ -83,3 +83,39 @@ class ProductForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
         }
+
+class OrderStatusForm(forms.ModelForm):
+    STATUS_CHOICES = [
+        ('pending', 'รอชำระเงิน'),
+        ('paid', 'ชำระเงินแล้ว'),
+        ('shipped', 'จัดส่งแล้ว'),
+        ('delivered', 'จัดส่งสำเร็จ'),
+        ('cancelled', 'ยกเลิกคำสั่งซื้อ'),
+    ]
+
+    status = forms.ChoiceField(
+        choices=STATUS_CHOICES,
+        label="สถานะคำสั่งซื้อ",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    class Meta:
+        model = Order
+        fields = ['status']
+
+class UserRoleForm(forms.ModelForm):
+    ROLE_CHOICES = [
+        ('customer', 'ลูกค้าทั่วไป'),
+        ('seller', 'ผู้ขายสินค้า'),
+        ('admin', 'ผู้ดูแลระบบ'),
+    ]
+
+    role = forms.ChoiceField(
+        choices=ROLE_CHOICES,
+        label="บทบาทผู้ใช้",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    class Meta:
+        model = User
+        fields = ['role']

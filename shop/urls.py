@@ -7,7 +7,7 @@ urlpatterns = [
     path('', views.login_view, name='home'),
     path('products/', views.product_list, name='product_list'),
     path('product/<int:pk>/', views.product_detail, name='product_detail'),
-    path('profile/', views.profile_view, name='profile'),
+    # path('profile/', views.profile_view, name='profile'),
 
     # Auth
     path('register/', views.register_view, name='register'),
@@ -31,4 +31,10 @@ urlpatterns = [
     path('admin/products/add/', views.admin_product_add, name='admin_product_add'),
     path('admin/products/edit/<int:pk>/', views.admin_product_edit, name='admin_product_edit'),
     path('admin/products/delete/<int:pk>/', views.admin_product_delete, name='admin_product_delete'),
+    path('admin/orders/', views.admin_order_list, name='admin_order_list'),
+    path('admin/orders/<int:order_id>/', views.admin_order_detail, name='admin_order_detail'),
+    path('admin/orders/<int:order_id>/cancel/', views.admin_order_cancel, name='admin_order_cancel'),
+    path('admin/users/', views.admin_user_list, name='admin_user_list'),
+    path('admin/users/edit/<int:user_id>/', views.admin_user_edit, name='admin_user_edit'),
+
 ]

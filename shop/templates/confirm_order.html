@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>ยืนยันคำสั่งซื้อ</h2>
+
+  <h4>ข้อมูลการจัดส่ง</h4>
+  <p>ชื่อผู้รับ: {{ checkout_info.receiver_name }}</p>
+  <p>เบอร์โทร: {{ checkout_info.phone }}</p>
+  <p>ที่อยู่: {{ checkout_info.address_line }}</p>
+  <p>ชำระเงินด้วย: {{ checkout_info.payment_method }}</p>
+
+  <hr>
+  <h4>รายการสินค้า</h4>
+  <ul>
+    {% for item in cart.cartitem_set.all %}
+      <li>{{ item.product.name }} x {{ item.quantity }} — {{ item.product.price }} บาท</li>
+    {% endfor %}
+  </ul>
+
+  {% if checkout_info.payment_method == 'transfer' %}
+    <h5>สแกน QR ชำระเงิน</h5>
+    <img src="{% static 'img/qr_payment.png' %}" width="250">
+  {% elif checkout_info.payment_method == 'credit_card' %}
+    <h5>กรอกข้อมูลบัตรเครดิต</h5>
+    <input type="text" placeholder="หมายเลขบัตร">
+    <input type="text" placeholder="MM/YY">
+    <input type="text" placeholder="CVV">
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success mt-3">ยืนยันคำสั่งซื้อ</button>
+  </form>
+</div>
+{% endblock %}

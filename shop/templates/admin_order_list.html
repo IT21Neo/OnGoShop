@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}จัดการคำสั่งซื้อ{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="title">คำสั่งซื้อทั้งหมด</h1>
+    <table class="table is-fullwidth is-striped">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>ผู้สั่ง</th>
+          <th>จำนวนรายการ</th>
+          <th>รวม (บาท)</th>
+          <th>สถานะ</th>
+          <th>วันที่</th>
+          <th>การจัดการ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr>
+          <td>{{ order.id }}</td>
+          <td>{{ order.user.username if order.user else "Guest" }}</td>
+          <td>{{ order.items.count }}</td>
+          <td>{{ order.total_price }}</td>
+          <td>{{ order.get_status_display }}</td>
+          <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+          <td>
+            <a class="button is-small is-info" href="{% url 'shop:admin_order_detail' order.id %}">รายละเอียด</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">ยังไม่มีคำสั่งซื้อ</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

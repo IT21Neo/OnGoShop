@@ -1,23 +1,28 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.conf import settings
 from django.db.models import Q
-from shop.forms import RegisterForm, AuthenticationForm, ProductForm, GuestCheckoutForm
-from shop.models import Product, Cart, CartItem, Order, OrderItem, Payment
+from shop.forms import RegisterForm, AuthenticationForm, ProductForm, GuestCheckoutForm, OrderStatusForm, UserRoleForm
+from shop.models import User, Product, Cart, CartItem, Order, OrderItem, Payment
 
 
 # ตรวจสิทธิ์ admin
 def admin_check(user):
-    return user.is_authenticated and user.is_staff
+    return user.is_authenticated and (getattr(user, 'role', '') in ['admin', 'owner'] or user.is_staff or user.is_superuser)
 
-@user_passes_test(admin_check, login_url='shop:login')
+@login_required
 def admin_product_list(request):
-    products = Product.objects.all().order_by('id')
-    return render(request, 'admin_product_list.html', {'products': products})
+    if request.user.role != 'admin':
+        return redirect('shop:product_list')
+
+    products = Product.objects.all()
+    return render(request, 'shop/admin_product_list.html', {
+        'products': products,
+    })
 
 @user_passes_test(admin_check, login_url='shop:login')
 def admin_product_add(request):
@@ -65,6 +70,59 @@ def admin_product_delete(request, pk):
         return redirect('shop:admin_product_list')
 
     return render(request, 'admin_product_delete.html', {'product': product})
+
+@user_passes_test(admin_check, login_url='shop:login')
+def admin_order_list(request):
+    """แสดงรายการคำสั่งซื้อทั้งหมด (admin)"""
+    orders = Order.objects.select_related('user').prefetch_related('items__product').order_by('-created_at')
+    return render(request, 'admin_order_list.html', {'orders': orders})
+
+@user_passes_test(admin_check, login_url='shop:login')
+def admin_order_detail(request, order_id):
+    """รายละเอียดคำสั่งซื้อ และฟอร์มเปลี่ยนสถานะ"""
+    order = get_object_or_404(Order.objects.prefetch_related('items__product', 'payments'), id=order_id)
+    if request.method == 'POST':
+        form = OrderStatusForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"อัพเดตสถานะคำสั่งซื้อ #{order.id} เรียบร้อยแล้ว")
+            return redirect('shop:admin_order_detail', order_id=order.id)
+    else:
+        form = OrderStatusForm(instance=order)
+
+    return render(request, 'admin_order_detail.html', {'order': order, 'form': form})
+
+@user_passes_test(admin_check, login_url='shop:login')
+@require_http_methods(["POST"])
+def admin_order_cancel(request, order_id):
+    """ยกเลิกคำสั่งซื้อโดย admin"""
+    order = get_object_or_404(Order, id=order_id)
+    order.status = 'cancelled'
+    order.save()
+    messages.info(request, f"ยกเลิกคำสั่งซื้อ #{order.id}")
+    return redirect('shop:admin_order_detail', order_id=order.id)
+
+@login_required
+def admin_user_list(request):
+    if request.user.role != 'admin':
+        return redirect('shop:product_list')
+
+    users = User.objects.all().order_by('-date_joined')
+    return render(request, 'shop/admin_user_list.html', {'users': users})
+
+
+@user_passes_test(admin_check, login_url='shop:login')
+def admin_user_edit(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        form = UserRoleForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"อัพเดตข้อมูลผู้ใช้ {user.username} เรียบร้อย")
+            return redirect('shop:admin_user_list')
+    else:
+        form = UserRoleForm(instance=user)
+    return render(request, 'admin_user_edit.html', {'user_obj': user, 'form': form})
 
 
 # สมัครสมาชิก
@@ -169,28 +227,21 @@ def _get_cart(user):
     return cart
 
 # เพิ่มสินค้าเข้าตะกร้า
-def add_to_cart(request):
-    if request.method == "POST":
-        product_id = request.POST.get('product_id')
-        quantity = int(request.POST.get('quantity', 1))
-        product = Product.objects.get(id=product_id)
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
 
-        if request.user.is_authenticated:
-            cart = _get_cart(request.user)
-            cart_item, created = CartItem.objects.get_or_create(
-                cart=cart,
-                product=product,
-                defaults={'quantity': quantity}
-            )
-            if not created:
-                cart_item.quantity += quantity
-                cart_item.save()
-            messages.success(request, f"เพิ่ม {product.name} ลงในตะกร้าแล้ว!")
-        else:
-            messages.error(request, "กรุณาเข้าสู่ระบบก่อนเพิ่มสินค้า")
-            return redirect('shop:login')
+    if request.user.is_authenticated:
+        cart, created = Cart.objects.get_or_create(user=request.user)
+    else:
+        session_key = request.session.session_key
+        if not session_key:
+            request.session.create()
+            session_key = request.session.session_key
+        cart, created = Cart.objects.get_or_create(session_key=session_key)
 
-    return redirect('shop:product_list')
+    CartItem.objects.create(cart=cart, product=product, quantity=1)
+    return redirect('shop:view_cart')
+
 
 
 # แสดงตะกร้า
@@ -265,15 +316,6 @@ def my_order_detail(request, order_id):
 @login_required(login_url='shop:login')
 @transaction.atomic
 def checkout(request):
-    cart = _get_cart(request.user)
-    items = cart.items.select_related('product')
-
-    if not items.exists():
-        messages.warning(request, "ตะกร้าของคุณว่างเปล่า")
-        return redirect('shop:cart')
-
-    total = sum(it.product.price * it.quantity for it in items)
-
     if request.method == 'POST':
         form = GuestCheckoutForm(request.POST)
         if form.is_valid():
@@ -282,42 +324,66 @@ def checkout(request):
             address = form.cleaned_data['address_line']
             method = form.cleaned_data['payment_method']
 
-            # ✅ สร้าง Order
+            items = []
+            total = 0
+            cart = _get_cart(request.user)
+            for it in cart.items.select_related('product'):
+                items.append((it.product, it.quantity))
+                total += it.quantity * it.product.price
+
             order = Order.objects.create(user=request.user, total_price=total)
+            for p, q in items:
+                OrderItem.objects.create(order=order, product=p, quantity=q, unit_price=p.price)
+                p.stock = max(0, p.stock - q)
+                p.save()
 
-            # ✅ บันทึกรายการสินค้า
-            for it in items:
-                OrderItem.objects.create(
-                    order=order,
-                    product=it.product,
-                    quantity=it.quantity,
-                    unit_price=it.product.price
-                )
-                # ตัด stock
-                it.product.stock = max(0, it.product.stock - it.quantity)
-                it.product.save()
+            Payment.objects.create(order=order, amount=total, method=method, status='pending')
+            cart.items.all().delete()
 
-            # ✅ สร้าง Payment
-            Payment.objects.create(
-                order=order,
-                amount=total,
-                method=method,
-                status='pending'
-            )
-
-            # ✅ เคลียร์ตะกร้า
-            items.delete()
-
-            messages.success(request, f"สั่งซื้อสำเร็จแล้ว! หมายเลขคำสั่งซื้อ #{order.id}")
-            return redirect('shop:my_orders')
+            messages.success(request, "สั่งซื้อสำเร็จแล้ว!")
+            return redirect('shop:order_success')
     else:
         form = GuestCheckoutForm()
+    return render(request, 'checkout.html', {'form': form})
 
-    return render(request, 'checkout.html', {
-        'form': form,
-        'cart_items': items,
-        'total_price': total
+@login_required
+def confirm_order(request):
+    cart = Cart.objects.filter(user=request.user).first()
+    checkout_info = request.session.get('checkout_info')
+
+    if request.method == 'POST':
+        # สร้างออเดอร์
+        order = Order.objects.create(
+            user=request.user,
+            receiver_name=checkout_info['receiver_name'],
+            phone=checkout_info['phone'],
+            address_line=checkout_info['address_line'],
+            payment_method=checkout_info['payment_method'],
+        )
+
+        for item in cart.cartitem_set.all():
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                quantity=item.quantity,
+                price=item.product.price,
+            )
+
+        # Payment
+        Payment.objects.create(
+            order=order,
+            method=checkout_info['payment_method'],
+            status='pending'
+        )
+
+        cart.delete()  # ล้างตะกร้า
+        return redirect('shop:payment_success', order_id=order.id)
+
+    return render(request, 'shop/confirm_order.html', {
+        'cart': cart,
+        'checkout_info': checkout_info,
     })
+
 
 
 def order_success(request):

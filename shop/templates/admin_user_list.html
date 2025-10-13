@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}จัดการสมาชิก{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="title">สมาชิก</h1>
+    <table class="table is-fullwidth is-striped">
+      <thead><tr><th>username</th><th>email</th><th>role</th><th>active</th><th>จัดการ</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.username }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.role }}</td>
+          <td>{{ u.is_active }}</td>
+          <td><a class="button is-small" href="{% url 'shop:admin_user_edit' u.id %}">แก้ไข</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">ยังไม่มีสมาชิก</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
