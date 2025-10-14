@@ -1,0 +1,14 @@
+<h2>Admin Dashboard</h2>
+
+<div class="summary">
+  <p>👤 สมาชิกทั้งหมด: {{ total_users }}</p>
+  <p>📦 สินค้าทั้งหมด: {{ total_products }}</p>
+  <p>🧾 คำสั่งซื้อทั้งหมด: {{ total_orders }}</p>
+  <p>💰 ยอดขายรวม: {{ total_sales }} บาท</p>
+</div>
+
+<div class="mt-4">
+  <a href="{% url 'shop:admin_product_list' %}" class="btn btn-primary">จัดการสินค้า</a>
+  <a href="{% url 'shop:admin_order_list' %}" class="btn btn-success">จัดการคำสั่งซื้อ</a>
+  <a href="{% url 'shop:admin_user_list' %}" class="btn btn-warning">จัดการสมาชิก</a>
+</div>

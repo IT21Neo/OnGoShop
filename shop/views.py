@@ -6,13 +6,41 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST, require_http_methods
 from django.conf import settings
 from django.db.models import Q
-from shop.forms import RegisterForm, AuthenticationForm, ProductForm, GuestCheckoutForm, OrderStatusForm, UserRoleForm
-from shop.models import User, Product, Cart, CartItem, Order, OrderItem, Payment
+from shop.forms import RegisterForm, AuthenticationForm, ProductForm, GuestCheckoutForm, OrderStatusForm, UserRoleForm, ProfileForm
+from shop.models import User, Product, Category, Cart, CartItem, Order, OrderItem, Payment
 
 
 # ตรวจสิทธิ์ admin
 def admin_check(user):
     return user.is_authenticated and (getattr(user, 'role', '') in ['admin', 'owner'] or user.is_staff or user.is_superuser)
+
+@login_required
+def admin_dashboard(request):
+    """
+    แสดงหน้าแดชบอร์ดผู้ดูแลระบบ
+    - สรุปข้อมูลสินค้า, สมาชิก, คำสั่งซื้อ, ยอดขาย
+    - มีปุ่มลิงก์ไปหน้าจัดการ
+    """
+    # ตรวจสอบสิทธิ์เฉพาะ staff
+    if not request.user.is_staff:
+        messages.error(request, "คุณไม่มีสิทธิ์เข้าถึงหน้านี้")
+        return redirect('shop:home')
+
+    # --- ดึงข้อมูลสรุป ---
+    total_users = User.objects.count()
+    total_products = Product.objects.count()
+    total_orders = Order.objects.count()
+    total_sales = Order.objects.filter(status='Paid').aggregate(Sum('total_price'))['total_price__sum'] or 0
+
+    # --- ส่งข้อมูลไปหน้า HTML ---
+    context = {
+        'total_users': total_users,
+        'total_products': total_products,
+        'total_orders': total_orders,
+        'total_sales': total_sales,
+    }
+
+    return render(request, 'shop/admin_dashboard.html', context)
 
 @login_required
 def admin_product_list(request):
@@ -169,47 +197,89 @@ def logout_view(request):
     messages.info(request, "ออกจากระบบเรียบร้อยแล้ว")
     return redirect('shop:product_list')
 
-# แสดงสินค้าทั้งหมด
+# หน้าโปรไฟล์ผู้ใช้
+@login_required
+def profile_view(request):
+    """
+    แสดงข้อมูลโปรไฟล์ของผู้ใช้ที่เข้าสู่ระบบ
+    """
+    return render(request, 'shop/profile.html', {
+        'user': request.user
+    })
+
+
+# หน้าแก้ไขโปรไฟล์ผู้ใช้
+@login_required
+def profile_edit(request):
+    """
+    อนุญาตให้ผู้ใช้แก้ไขข้อมูลส่วนตัว (ชื่อ, อีเมล)
+    """
+    user = request.user
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "อัปเดตโปรไฟล์เรียบร้อยแล้ว!")
+            return redirect('shop:profile')
+    else:
+        form = ProfileForm(instance=user)
+
+    return render(request, 'shop/profile_edit.html', {'form': form})
+
+
+# แสดงสินค้าทั้งหมด (เพิ่มหมวดหมู่ + สินค้าแนะนำ)
 def product_list(request):
-    """หน้าแสดงสินค้าทั้งหมด + ค้นหา + เรียงลำดับ + เพิ่มลงตะกร้า"""
-    products = Product.objects.all().order_by('-id')
+    # ดึงสินค้าทั้งหมดจากฐานข้อมูล
+    products = Product.objects.all()
 
-    # 🔍 ค้นหาสินค้า
-    query = request.GET.get('q')
-    if query:
-        products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    # --- ส่วนค้นหา ---
+    search_query = request.GET.get('q')
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) | Q(description__icontains=search_query)
+        )
 
-    # 🔽 เรียงลำดับสินค้า
-    sort = request.GET.get('sort')
-    if sort == 'price_low':
+    # --- ส่วนเรียงลำดับ ---
+    sort_option = request.GET.get('sort')
+    if sort_option == 'price_low':
         products = products.order_by('price')
-    elif sort == 'price_high':
+    elif sort_option == 'price_high':
         products = products.order_by('-price')
-    elif sort == 'newest':
+    elif sort_option == 'newest':
         products = products.order_by('-id')
-    elif sort == 'oldest':
+    elif sort_option == 'oldest':
         products = products.order_by('id')
 
-    # 🛒 เพิ่มสินค้าลงตะกร้า
+    # --- ดึงหมวดหมู่ทั้งหมด (ไว้แสดงใน sidebar หรือ dropdown) ---
+    categories = Category.objects.all()
+
+    # --- ดึงสินค้าสุ่มแนะนำ (5 ชิ้นล่าสุด) ---
+    recommended = Product.objects.order_by('-id')[:5]
+
+    # --- ส่วนเพิ่มสินค้าลงตะกร้า ---
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
-        if request.user.is_authenticated:
-            product = Product.objects.get(id=product_id)
-            cart_item, created = CartItem.objects.get_or_create(
-                user=request.user,
-                product=product,
-                defaults={'quantity': 1}
-            )
-            if not created:
-                cart_item.quantity += 1
-                cart_item.save()
-            messages.success(request, f"เพิ่ม {product.name} ลงในตะกร้าแล้ว!")
-        else:
+        if not request.user.is_authenticated:
             messages.error(request, "กรุณาเข้าสู่ระบบก่อนเพิ่มสินค้าลงตะกร้า")
             return redirect('shop:login')
+
+        product = get_object_or_404(Product, id=product_id)
+        cart = _get_cart(request.user)
+
+        # ถ้ามีสินค้านี้อยู่ในตะกร้าแล้ว ให้เพิ่มจำนวน
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+        if not created:
+            cart_item.quantity += 1
+            cart_item.save()
+
+        messages.success(request, f"เพิ่ม {product.name} ลงในตะกร้าแล้ว!")
         return redirect('shop:product_list')
 
-    return render(request, 'product_list.html', {'products': products})
+    return render(request, 'product_list.html', {
+        'products': products,
+        'categories': categories,
+        'recommended': recommended,
+    })
 
 # แสดงรายละเอียดสินค้า
 def product_detail(request, pk):
@@ -223,68 +293,92 @@ def product_detail(request, pk):
 
 # ฟังก์ชันช่วย
 def _get_cart(user):
-    cart, created = Cart.objects.get_or_create(user=user)
+    """ดึงตะกร้าของผู้ใช้ ถ้ายังไม่มีให้สร้างใหม่"""
+    cart, _ = Cart.objects.get_or_create(user=user)
     return cart
 
+
 # เพิ่มสินค้าเข้าตะกร้า
-def add_to_cart(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+@login_required(login_url='shop:login')
+def add_to_cart(request):
+    if request.method == "POST":
+        product_id = request.POST.get("product_id")
+        quantity = int(request.POST.get("quantity", 1))
 
-    if request.user.is_authenticated:
-        cart, created = Cart.objects.get_or_create(user=request.user)
-    else:
-        session_key = request.session.session_key
-        if not session_key:
-            request.session.create()
-            session_key = request.session.session_key
-        cart, created = Cart.objects.get_or_create(session_key=session_key)
+        # ตรวจสอบว่าสินค้ามีอยู่จริงไหม
+        product = Product.objects.filter(id=product_id).first()
+        if not product:
+            messages.error(request, "❌ ไม่พบสินค้าที่เลือก")
+            return redirect("shop:product_list")
 
-    CartItem.objects.create(cart=cart, product=product, quantity=1)
-    return redirect('shop:view_cart')
+        # ดึงตะกร้าของผู้ใช้
+        cart = _get_cart(request.user)
+
+        # ตรวจว่ามีสินค้าเดิมในตะกร้ารึยัง
+        item, created = CartItem.objects.get_or_create(
+            cart=cart, product=product, defaults={"quantity": quantity}
+        )
+
+        # ถ้ามีอยู่แล้ว ให้เพิ่มจำนวน
+        if not created:
+            item.quantity += quantity
+            item.save()
+
+        messages.success(request, f"เพิ่ม {product.name} ลงในตะกร้าแล้ว!")
+        return redirect("shop:product_list")
+
+    return redirect("shop:product_list")
 
 
-
-# แสดงตะกร้า
+# แสดงหน้าตะกร้า
 @login_required(login_url='shop:login')
 def view_cart(request):
     cart = _get_cart(request.user)
-    items = cart.items.select_related('product')
-    total = sum(it.product.price * it.quantity for it in items)
-    return render(request, 'cart.html', {'items': items, 'total': total})
+    items = cart.items.select_related("product")
+
+    # เพิ่ม subtotal ให้แต่ละ item
+    for item in items:
+        item.subtotal = item.product.price * item.quantity
+
+    total = sum(item.subtotal for item in items)
+
+    return render(request, "cart.html", {
+        "items": items,
+        "total": total
+    })
 
 
-# ลบสินค้า
+# ลบสินค้าออกจากตะกร้า
+@login_required(login_url='shop:login')
 def remove_from_cart(request):
-    if request.method == 'POST':
-        pid = request.POST.get('product_id')
-        if request.user.is_authenticated:
-            cart = _get_cart(request.user)
-            CartItem.objects.filter(cart=cart, product_id=pid).delete()
-        else:
-            cart = request.session.get('cart', {})
-            if pid in cart:
-                del cart[pid]
-                request.session['cart'] = cart
-        messages.info(request, "นำสินค้าออกจากตะกร้าแล้ว")
-    return redirect('shop:cart')
-
-@require_POST
-def update_cart(request):
-    pid = request.POST.get('product_id')
-    action = request.POST.get('action')
-
-    if request.user.is_authenticated:
+    if request.method == "POST":
+        product_id = request.POST.get("product_id")
         cart = _get_cart(request.user)
-        try:
-            item = cart.items.get(product_id=pid)
+
+        # ลบสินค้าที่เลือกออกจากตะกร้า
+        CartItem.objects.filter(cart=cart, product_id=product_id).delete()
+        messages.info(request, "นำสินค้าออกจากตะกร้าแล้ว")
+
+    return redirect("shop:cart")
+
+
+# ปรับจำนวนสินค้าในตะกร้า
+@login_required(login_url='shop:login')
+def update_cart(request):
+    if request.method == "POST":
+        product_id = request.POST.get("product_id")
+        action = request.POST.get("action")
+        cart = _get_cart(request.user)
+
+        item = CartItem.objects.filter(cart=cart, product_id=product_id).first()
+        if item:
             if action == "increase":
                 item.quantity += 1
             elif action == "decrease" and item.quantity > 1:
                 item.quantity -= 1
             item.save()
-        except CartItem.DoesNotExist:
-            pass
-    return redirect('shop:cart')
+
+    return redirect("shop:cart")
 
 
 @login_required(login_url='shop:login')
@@ -319,70 +413,61 @@ def checkout(request):
     if request.method == 'POST':
         form = GuestCheckoutForm(request.POST)
         if form.is_valid():
-            receiver = form.cleaned_data['receiver_name']
-            phone = form.cleaned_data['phone']
-            address = form.cleaned_data['address_line']
-            method = form.cleaned_data['payment_method']
-
-            items = []
-            total = 0
-            cart = _get_cart(request.user)
-            for it in cart.items.select_related('product'):
-                items.append((it.product, it.quantity))
-                total += it.quantity * it.product.price
-
-            order = Order.objects.create(user=request.user, total_price=total)
-            for p, q in items:
-                OrderItem.objects.create(order=order, product=p, quantity=q, unit_price=p.price)
-                p.stock = max(0, p.stock - q)
-                p.save()
-
-            Payment.objects.create(order=order, amount=total, method=method, status='pending')
-            cart.items.all().delete()
-
-            messages.success(request, "สั่งซื้อสำเร็จแล้ว!")
-            return redirect('shop:order_success')
+            # ✅ เก็บข้อมูลไว้ใน session ชั่วคราว
+            request.session['checkout_info'] = {
+                'receiver_name': form.cleaned_data['receiver_name'],
+                'phone': form.cleaned_data['phone'],
+                'address_line': form.cleaned_data['address_line'],
+                'payment_method': form.cleaned_data['payment_method'],
+            }
+            return redirect('shop:confirm_order')
     else:
         form = GuestCheckoutForm()
     return render(request, 'checkout.html', {'form': form})
 
+# ยืนยันคำสั่งซื้อ (หน้า Confirm Order)
 @login_required
 def confirm_order(request):
-    cart = Cart.objects.filter(user=request.user).first()
-    checkout_info = request.session.get('checkout_info')
+    """
+    แสดงรายละเอียดคำสั่งซื้อก่อนยืนยันการชำระเงิน
+    - ดึงคำสั่งซื้อที่ยังไม่ได้ชำระของผู้ใช้คนปัจจุบัน
+    - แสดงรายการสินค้า + ราคารวม
+    - เมื่อกดยืนยัน (POST) จะเปลี่ยนสถานะเป็น 'Paid' และไปหน้า success
+    """
+    try:
+        # ดึงคำสั่งซื้อที่ยังไม่ได้ชำระของ user นี้
+        order = Order.objects.filter(user=request.user, status='Pending').latest('id')
+    except Order.DoesNotExist:
+        messages.error(request, "ไม่พบคำสั่งซื้อที่รอการยืนยัน")
+        return redirect('shop:cart')
 
+    order_items = OrderItem.objects.filter(order=order)
+
+    # ถ้าผู้ใช้กดยืนยันการชำระเงิน
     if request.method == 'POST':
-        # สร้างออเดอร์
-        order = Order.objects.create(
-            user=request.user,
-            receiver_name=checkout_info['receiver_name'],
-            phone=checkout_info['phone'],
-            address_line=checkout_info['address_line'],
-            payment_method=checkout_info['payment_method'],
-        )
+        order.status = 'Paid'
+        order.save()
 
-        for item in cart.cartitem_set.all():
-            OrderItem.objects.create(
-                order=order,
-                product=item.product,
-                quantity=item.quantity,
-                price=item.product.price,
-            )
-
-        # Payment
+        # สร้าง transaction record (optional)
         Payment.objects.create(
             order=order,
-            method=checkout_info['payment_method'],
-            status='pending'
+            amount=order.total_price,
+            method='QR Code',
+            transaction_id=f"TXN-{order.id}-{int(datetime.now().timestamp())}"
         )
 
-        cart.delete()  # ล้างตะกร้า
-        return redirect('shop:payment_success', order_id=order.id)
+        messages.success(request, "ชำระเงินเรียบร้อยแล้ว!")
+        return redirect('shop:order_success')
 
-    return render(request, 'shop/confirm_order.html', {
-        'cart': cart,
-        'checkout_info': checkout_info,
-    })
+    # ส่งข้อมูลไปหน้า confirm_order.html
+    context = {
+        'order': order,
+        'order_items': order_items,
+        'qr_code_path': '/static/images/qrcode.png',  # path ของรูป QR code
+    }
+    return render(request, 'shop/confirm_order.html', context)
+
+
 
 
 

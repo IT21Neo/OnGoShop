@@ -1,35 +1,38 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
 <div class="container mt-4">
-  <h2>ยืนยันคำสั่งซื้อ</h2>
+  <h2 class="title has-text-light">ยืนยันคำสั่งซื้อ</h2>
 
-  <h4>ข้อมูลการจัดส่ง</h4>
-  <p>ชื่อผู้รับ: {{ checkout_info.receiver_name }}</p>
-  <p>เบอร์โทร: {{ checkout_info.phone }}</p>
-  <p>ที่อยู่: {{ checkout_info.address_line }}</p>
-  <p>ชำระเงินด้วย: {{ checkout_info.payment_method }}</p>
+  <div class="box has-background-dark p-5">
+    <h4 class="has-text-light">ข้อมูลการจัดส่ง</h4>
+    <p>ชื่อผู้รับ: {{ checkout_info.receiver_name }}</p>
+    <p>เบอร์โทร: {{ checkout_info.phone }}</p>
+    <p>ที่อยู่: {{ checkout_info.address_line }}</p>
+    <p>ชำระเงินด้วย: {{ checkout_info.payment_method }}</p>
 
-  <hr>
-  <h4>รายการสินค้า</h4>
-  <ul>
-    {% for item in cart.cartitem_set.all %}
-      <li>{{ item.product.name }} x {{ item.quantity }} — {{ item.product.price }} บาท</li>
-    {% endfor %}
-  </ul>
+    <hr class="has-background-grey-lighter">
 
-  {% if checkout_info.payment_method == 'transfer' %}
-    <h5>สแกน QR ชำระเงิน</h5>
-    <img src="{% static 'img/qr_payment.png' %}" width="250">
-  {% elif checkout_info.payment_method == 'credit_card' %}
-    <h5>กรอกข้อมูลบัตรเครดิต</h5>
-    <input type="text" placeholder="หมายเลขบัตร">
-    <input type="text" placeholder="MM/YY">
-    <input type="text" placeholder="CVV">
-  {% endif %}
+    <h4 class="has-text-light">รายการสินค้า</h4>
+    <ul>
+      {% for item in cart.cartitem_set.all %}
+      <li class="has-text-white">
+        {{ item.product.name }} × {{ item.quantity }} — {{ item.product.price }} บาท
+      </li>
+      {% endfor %}
+    </ul>
 
-  <form method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-success mt-3">ยืนยันคำสั่งซื้อ</button>
-  </form>
+    {% if checkout_info.payment_method == 'transfer' %}
+      <div class="has-text-centered mt-5">
+        <h5 class="has-text-light mb-2">📸 สแกน QR เพื่อชำระเงิน</h5>
+        <img src="{% static img:qr_payment.png %}" alt="QR Payment" style="max-width: 250px; border-radius: 10px;">
+      </div>
+    {% endif %}
+
+    <form method="post" class="has-text-centered mt-4">
+      {% csrf_token %}
+      <button type="submit" class="button is-magenta is-medium">ยืนยันคำสั่งซื้อ</button>
+    </form>
+  </div>
 </div>
 {% endblock %}

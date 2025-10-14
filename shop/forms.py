@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
-from shop.models import Product, Order
+from shop.models import Product, Order, User
 
 User = get_user_model()
 
@@ -119,3 +119,18 @@ class UserRoleForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['role']
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+        labels = {
+            'first_name': 'ชื่อจริง',
+            'last_name': 'นามสกุล',
+            'email': 'อีเมล',
+        }
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }

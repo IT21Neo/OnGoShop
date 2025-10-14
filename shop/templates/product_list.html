@@ -4,22 +4,16 @@
 <h1 class="title">รายการสินค้า</h1>
 <form method="get" action="{% url 'shop:product_list' %}" class="mb-5">
   <div class="columns is-vcentered">
-    <div class="column is-4">
-      <input class="input" type="search" name="q" value="{{ request.GET.q }}" placeholder="ค้นหาสินค้า...">
-    </div>
     <div class="column is-3">
       <div class="select is-fullwidth">
         <select name="sort" onchange="this.form.submit()">
-          <option value="">-- เรียงตาม --</option>
+          <option value="">เรียงตาม</option>
           <option value="price_low" {% if request.GET.sort == 'price_low' %}selected{% endif %}>ราคาต่ำสุด</option>
           <option value="price_high" {% if request.GET.sort == 'price_high' %}selected{% endif %}>ราคาสูงสุด</option>
           <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>สินค้าใหม่ล่าสุด</option>
           <option value="oldest" {% if request.GET.sort == 'oldest' %}selected{% endif %}>สินค้าเก่าที่สุด</option>
         </select>
       </div>
-    </div>
-    <div class="column">
-      <button class="button is-link">ค้นหา</button>
     </div>
   </div>
 </form>
@@ -49,7 +43,6 @@
                 </div>
               </div>
             </form>
-
             <a href="{% url 'shop:product_detail' p.id %}" class="button is-small is-info is-light mt-2">ดูรายละเอียด</a>
           </div>
         </div>

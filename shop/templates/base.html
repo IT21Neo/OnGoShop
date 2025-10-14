@@ -6,101 +6,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}OnGoShop{% endblock %}</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+
   <style>
-    :root {
-      --magenta: #8b5cf6;
-      --magenta-hover: #7c3aed;
-      --dark-bg: #121212;
-      --dark-text: #f3f3f3;
-      --light-bg: #ffffff;
-      --light-text: #1e1e1e;
+    html, body {
+      height: 100%;
+      margin: 0;
+      background-color: #101828;
+      color: #f1f1f1;
+      display: flex;
+      flex-direction: column;
     }
 
-    body {
-      transition: all 0.3s ease;
-    }
-
-    body.dark {
-      background-color: var(--dark-bg);
-      color: var(--dark-text);
-    }
-
-    body.light {
-      background-color: var(--light-bg);
-      color: var(--light-text);
-    }
-
+    /* ===== Navbar ===== */
     .navbar {
-      transition: background-color 0.3s ease, color 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      background-color: #1e1b4b;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      padding: 0.5rem 1.5rem;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
     }
 
-    .navbar.dark {
-      background-color: #1c1c1c;
-    }
-
-    .navbar.light {
-      background-color: #f9f9f9;
+    .navbar-menu {
+      width: 100%;
+      max-width: 1600px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: nowrap;
     }
 
     .navbar-item,
     .navbar-link {
+      color: #fff !important;
       font-weight: 500;
-      transition: color 0.3s ease;
+      transition: color 0.2s ease;
     }
 
-    body.dark .navbar-item,
-    body.dark .navbar-link,
-    body.dark .navbar-brand span {
-      color: var(--dark-text) !important;
+    .navbar-item:hover,
+    .navbar-link:hover {
+      color: #c084fc !important;
     }
 
-    body.light .navbar-item,
-    body.light .navbar-link,
-    body.light .navbar-brand span {
-      color: var(--light-text) !important;
+    .navbar .input {
+      max-width: 300px;
+      font-size: 0.95rem;
+      border-radius: 20px;
+      border-color: #a855f7;
+      background-color: #181c2f;
+      color: #fff;
+    }
+
+    .navbar .input::placeholder {
+      color: #aaa;
+    }
+
+    .navbar .input:focus {
+      border-color: #c084fc;
+      box-shadow: 0 0 0 0.15rem rgba(192, 132, 252, 0.3);
     }
 
     .button.is-magenta {
-      background-color: var(--magenta);
+      background-color: #a855f7;
       color: white;
       border: none;
-      transition: background 0.2s ease;
     }
 
     .button.is-magenta:hover {
-      background-color: var(--magenta-hover);
+      background-color: #9333ea;
+      color: #fff;
     }
 
     .icon-btn {
       background: none;
       border: none;
       cursor: pointer;
-      color: inherit;
-      transition: background 0.2s ease;
+      color: #fff;
+      transition: all 0.2s ease;
       border-radius: 8px;
       padding: 6px;
     }
 
     .icon-btn:hover {
-      background-color: rgba(0, 0, 0, 0.05);
-    }
-
-    .navbar .input {
-      max-width: 400px;
-      min-width: 250px;
-      font-size: 0.95rem;
-      transition: all 0.2s ease;
-    }
-    .navbar .input:focus {
-      border-color: var(--magenta);
-      box-shadow: 0 0 0 0.15rem rgba(139, 92, 246, 0.3);
+      background-color: rgba(255, 255, 255, 0.1);
     }
 
     .cart-badge {
       position: absolute;
-      top: -4px;
-      right: -6px;
+      top: 0;
+      right: 0;
       background-color: #ef4444;
       color: white;
       font-size: 0.7rem;
@@ -111,134 +105,145 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      transform: translate(50%, -40%);
     }
 
+    /* ===== Main Content ===== */
+    main {
+      flex: 1;
+      padding-top: 5rem;
+      padding-bottom: 2rem;
+    }
+
+    /* ===== Footer ===== */
     footer.footer {
-      background-color: transparent;
-      color: gray;
+      background-color: #111;
+      color: #ccc;
+      text-align: center;
+      padding: 1rem;
+      margin-top: auto;
+      width: 100%;
+      position: relative;
+      bottom: 0;
     }
   </style>
 </head>
-<body class="dark">
-    <nav id="navbar" class="navbar dark is-fixed-top px-5" role="navigation">
-    <div class="navbar-brand">
-      <a class="navbar-item" href="{% url 'shop:product_list' %}">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" id="logoIcon" class="bi bi-bag-check-fill" viewBox="0 0 16 16">
+
+<body>
+  <nav class="navbar is-fixed-top" role="navigation" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+    <div class="navbar-start" style="display: flex; align-items: center; gap: 1rem;">
+      <a class="navbar-item has-text-weight-bold is-size-5" href="{% url 'shop:product_list' %}" style="display: flex; align-items: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white">
           <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4a.75.75 0 0 1-1.08 0l-2-2a.75.75 0 0 1 1.08-1.04L8 8.94l2.97-2.97z"/>
-          <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4H13a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a1 1 0 0 1 1-1h2.5v-.5A2.5 2.5 0 0 1 8 1z"/>
+          <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4H13a1 1 0 0 1 1 1v9a2 2 0 0 1-2 
+                  2H4a2 2 0 0 1-2-2V5a1 1 0 0 1 1-1h2.5v-.5A2.5 
+                  2.5 0 0 1 8 1z"/>
         </svg>
-        <span class="ml-2 has-text-weight-bold">OnGoShop</span>
+        <span class="ml-2">OnGoShop</span>
       </a>
+      <a class="navbar-item" href="{% url 'shop:product_list' %}">หน้าแรก</a>
     </div>
 
-    <div class="navbar-menu is-flex is-align-items-center" style="width: 100%; justify-content: space-between;">
-      
-      <div class="navbar-start is-flex is-align-items-center">
-        <a class="navbar-item" href="{% url 'shop:product_list' %}">หน้าแรก</a>
-      </div>
-
-      <div class="navbar-item is-flex is-justify-content-center" style="flex-grow: 1;">
-        <form method="get" action="{% url 'shop:product_list' %}" class="is-flex is-justify-content-center" style="width: 100%;">
-          <div class="control has-icons-left" style="max-width: 380px; width: 100%;">
-            <input 
-              class="input is-rounded" 
-              type="search" 
-              name="q" 
-              value="{{ request.GET.q }}" 
-              placeholder="ค้นหาสินค้า..."
-              onkeypress="if(event.key === 'Enter'){ this.form.submit(); }">
-            <span class="icon is-left">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.415l-3.85-3.85zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
-              </svg>
-            </span>
-          </div>
-        </form>
-      </div>
-
-      <div class="navbar-end is-flex is-align-items-center" style="gap: 1rem; margin-right: 0.5rem;">
-
-        {% if user.is_authenticated %}
-          <div class="navbar-item" style="position: relative;">
-            <a href="{% url 'shop:cart' %}" class="icon-btn" title="ตะกร้าสินค้า">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-cart3">
-                <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l.84 4.479 9.144-.459L13.89 4z"/>
-              </svg>
-              {% if cart_count > 0 %}
-              <span class="cart-badge">{{ cart_count }}</span>
-              {% endif %}
-            </a>
-          </div>
-
-          <div class="navbar-item has-dropdown is-hoverable">
-            <a class="navbar-link icon-btn" style="border-radius: 50%;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-person-circle">
-                <path d="M11 10a2 2 0 1 0-4 0 2 2 0 0 0 4 0z"/>
-                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-4.9 11.9c.03-.32.07-.64.12-.96.22-1.5 1.46-2.68 2.97-2.93A3.993 3.993 0 0 1 8 7c1.05 0 2.01.4 2.74 1.05a3.01 3.01 0 0 1 2.9 2.38c.05.32.09.64.12.96A7 7 0 0 0 8 1z"/>
-              </svg>
-            </a>
-            <div class="navbar-dropdown is-right">
-              <a class="navbar-item" href="{% url 'shop:my_orders' %}">คำสั่งซื้อของฉัน</a>
-              {% if user.is_staff %}
-              <a class="navbar-item" href="{% url 'shop:admin_product_list' %}">แดชบอร์ดแอดมิน</a>
-              {% endif %}
-              <hr class="navbar-divider">
-              <a class="navbar-item has-text-danger" href="{% url 'shop:logout' %}">ออกจากระบบ</a>
-            </div>
-          </div>
-
-        {% else %}
-          <div class="navbar-item">
-            <a class="button is-light" href="{% url 'shop:login' %}">เข้าสู่ระบบ</a>
-          </div>
-          <div class="navbar-item">
-            <a class="button is-magenta" href="{% url 'shop:register' %}">สมัครสมาชิก</a>
-          </div>
-        {% endif %}
-
-        <div class="navbar-item">
-          <button id="themeToggle" class="icon-btn" title="Toggle Theme">
-            <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-moon">
-              <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46 7.21 7.21 0 0 0 .878 3.46.768.768 0 0 1-.08.858 8.006 8.006 0 1 1 0-8.636z"/>
+    <div class="navbar-center" style="flex: 1; display: flex; justify-content: center;">
+      <form method="get" action="{% url 'shop:product_list' %}" style="width: 100%; max-width: 320px;">
+        <div class="control has-icons-left" style="width: 100%;">
+          <input class="input is-rounded" type="search" name="q" value="{{ request.GET.q }}" placeholder="ค้นหาสินค้า...">
+          <span class="icon is-left">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-search" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 
+                      1.398h-.001l3.85 3.85a1 1 0 0 0 
+                      1.415-1.415l-3.85-3.85zm-5.242 
+                      1.656a5.5 5.5 0 1 1 0-11 
+                      5.5 5.5 0 0 1 0 11z"/>
             </svg>
-            <svg id="sun" style="display:none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-sun">
-              <path d="M8 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 8a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/>
-            </svg>
-          </button>
+          </span>
         </div>
-      </div>
+      </form>
+    </div>
+
+    <div class="navbar-end" style="display: flex; align-items: center; gap: 1rem;">
+      {% if user.is_authenticated %}
+        <div class="navbar-item" style="position: relative;">
+          <a href="{% url 'shop:cart' %}" class="icon-btn" title="ตะกร้าสินค้า">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" class="bi bi-cart3">
+              <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 
+                      0 0 1 .485.379L2.89 3H14.5a.5.5 
+                      0 0 1 .49.598l-1 5a.5.5 0 0 
+                      1-.465.401l-9.397.472L4.415 
+                      11H13a.5.5 0 0 1 0 
+                      1H4a.5.5 0 0 1-.491-.408L2.01 
+                      3.607 1.61 2H.5a.5.5 0 
+                      0 1-.5-.5M3.102 4l.84 
+                      4.479 9.144-.459L13.89 4z"/>
+            </svg>
+            {% if cart_count > 0 %}
+            <span class="cart-badge">{{ cart_count }}</span>
+            {% endif %}
+          </a>
+        </div>
+
+        <div class="navbar-item has-dropdown" id="profileMenu">
+          <a class="navbar-link icon-btn" id="profileToggle" style="border-radius: 50%; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" class="bi bi-person-circle">
+              <path d="M11 10a2 2 0 1 0-4 
+                      0 2 2 0 0 0 4 0z"/>
+              <path fill-rule="evenodd" 
+                    d="M0 8a8 8 0 1 1 16 0A8 
+                    8 0 0 1 0 8zm8-7a7 7 0 0 
+                    0-4.9 11.9c.03-.32.07-.64.12-.96.22-1.5 
+                    1.46-2.68 2.97-2.93A3.993 
+                    3.993 0 0 1 8 7c1.05 0 
+                    2.01.4 2.74 1.05a3.01 
+                    3.01 0 0 1 2.9 2.38c.05.32.09.64.12.96A7 
+                    7 0 0 0 8 1z"/>
+            </svg>
+          </a>
+          <div class="navbar-dropdown is-right" id="profileDropdown" style="display: none;">
+            <a class="navbar-item" href="{% url 'shop:profile' %}">โปรไฟล์ของฉัน</a>
+            <a class="navbar-item" href="{% url 'shop:my_orders' %}">คำสั่งซื้อของฉัน</a>
+            {% if user.is_staff %}
+            <a class="navbar-item" href="{% url 'shop:admin_product_list' %}">แดชบอร์ดแอดมิน</a>
+            {% endif %}
+            <hr class="navbar-divider">
+            <a class="navbar-item has-text-danger" href="{% url 'shop:logout' %}">ออกจากระบบ</a>
+          </div>
+        </div>
+
+        <script>
+          const toggle = document.getElementById("profileToggle");
+          const dropdown = document.getElementById("profileDropdown");
+
+          toggle.addEventListener("click", (e) => {
+            e.stopPropagation();
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+          });
+
+          document.addEventListener("click", (e) => {
+            if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+              dropdown.style.display = "none";
+            }
+          });
+        </script>
+      {% else %}
+        <div class="navbar-item">
+          <a class="button is-light" href="{% url 'shop:login' %}">เข้าสู่ระบบ</a>
+        </div>
+        <div class="navbar-item">
+          <a class="button is-magenta" href="{% url 'shop:register' %}">สมัครสมาชิก</a>
+        </div>
+      {% endif %}
     </div>
   </nav>
 
 
-  <section class="section mt-6">
+  <main>
     <div class="container">
       {% block content %}{% endblock %}
     </div>
-  </section>
+  </main>
 
-  <footer class="footer has-text-centered">
+  <footer class="footer">
     <p>© 2025 OnGoShop — ระบบ E-commerce</p>
   </footer>
-
-  <script>
-    const toggle = document.getElementById("themeToggle");
-    const body = document.body;
-    const navbar = document.getElementById("navbar");
-    const logoIcon = document.getElementById("logoIcon");
-    const moon = document.getElementById("moon");
-    const sun = document.getElementById("sun");
-
-    toggle.addEventListener("click", () => {
-      const isDark = body.classList.contains("dark");
-      body.classList.toggle("dark", !isDark);
-      body.classList.toggle("light", isDark);
-      navbar.classList.toggle("dark", !isDark);
-      navbar.classList.toggle("light", isDark);
-      moon.style.display = isDark ? "inline" : "none";
-      sun.style.display = isDark ? "none" : "inline";
-      logoIcon.setAttribute("fill", isDark ? "#000" : "#fff");
-    });
-  </script>
 </body>
 </html>
