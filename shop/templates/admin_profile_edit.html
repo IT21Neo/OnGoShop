@@ -1,0 +1,61 @@
+{% extends "admin_base.html" %}
+{% block title %}Edit Admin Profile{% endblock %}
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="columns is-centered">
+            <div class="column is-two-thirds">
+                <div class="box">
+                    <h1 class="title has-text-centered">แก้ไขโปรไฟล์ผู้ดูแลระบบ</h1>
+                    <p class="subtitle is-6 has-text-centered">สำหรับ: {{ user.username }}</p>
+                    <hr>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="field">
+                            <label class="label">{{ form.first_name.label }}</label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="text" name="first_name" value="{{ form.first_name.value|default:'' }}" placeholder="ชื่อจริง">
+                                <span class="icon is-small is-left">👤</span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">{{ form.last_name.label }}</label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="text" name="last_name" value="{{ form.last_name.value|default:'' }}" placeholder="นามสกุล">
+                                <span class="icon is-small is-left">👤</span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">{{ form.email.label }}</label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="email" name="email" value="{{ form.email.value|default:'' }}" placeholder="อีเมล">
+                                <span class="icon is-small is-left">✉️</span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">{{ form.profile_picture.label }}</label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="text" name="profile_picture" value="{{ user.profile_picture|default:'' }}" placeholder="https://example.com/image.jpg">
+                                <span class="icon is-small is-left">🖼️</span>
+                            </div>
+                            <p class="help">วาง URL ของรูปภาพโปรไฟล์</p>
+                        </div>
+                        <br>
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <button class="button is-success" type="submit">
+                                    <span class="icon">💾</span>
+                                    <span>บันทึกการเปลี่ยนแปลง</span>
+                                </button>
+                            </div>
+                            <div class="control">
+                                <a class="button is-light" href="{% url 'shop:profile' %}">ยกเลิก</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-half">
+        <div class="box">
+          <h1 class="title has-text-centered">{{ title }}</h1>
+          <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <hr>
+            <div class="field is-grouped">
+              <div class="control">
+                <button class="button is-primary" type="submit">บันทึก</button>
+              </div>
+              <div class="control">
+                <a class="button is-light" href="{% url 'shop:admin_category_list' %}">ยกเลิก</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

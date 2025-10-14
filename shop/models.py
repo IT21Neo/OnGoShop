@@ -1,9 +1,7 @@
-# shop/models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
-# Custom User
 class User(AbstractUser):
     phone = models.CharField(max_length=20, blank=True, null=True)
     age = models.PositiveIntegerField(null=True, blank=True)
@@ -13,8 +11,8 @@ class User(AbstractUser):
         ('owner', 'Owner'),
     ]
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='customer')
+    profile_picture = models.CharField(max_length=255, blank=True, null=True, help_text="URL to profile picture")
 
-# Category
 class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -22,7 +20,6 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-# Product
 class Product(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -34,7 +31,6 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-# Cart
 class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     session_key = models.CharField(max_length=40, null=True, blank=True)
@@ -43,7 +39,6 @@ class Cart(models.Model):
     def __str__(self):
         return f"Cart ({self.user.username if self.user else 'Guest'})"
 
-# CartItem
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -52,26 +47,24 @@ class CartItem(models.Model):
     class Meta:
         unique_together = ('cart', 'product')
 
-# Order
 class Order(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'รอดำเนินการ'),
-        ('shipped', 'จัดส่งแล้ว'),
-        ('cancelled', 'ยกเลิก'),
+        ('pending', 'รอชำระเงิน'),
+        ('paid', 'ชำระเงินแล้ว'),
+        ('shipping', 'กำลังจัดส่ง'),
+        ('delivered', 'จัดส่งสำเร็จ'),
     ]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     total_price = models.PositiveIntegerField()
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
-# OrderItem
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
     quantity = models.PositiveIntegerField()
     unit_price = models.PositiveIntegerField()
 
-# Payment
 class Payment(models.Model):
     PAYMENT_METHODS = [('credit_card','credit_card'), ('transfer','transfer'), ('cash','cash')]
     PAYMENT_STATUS = [('pending','รอการยืนยัน'), ('success','สำเร็จแล้ว'), ('cancelled','ยกเลิก')]
@@ -82,7 +75,6 @@ class Payment(models.Model):
     status = models.CharField(max_length=50, choices=PAYMENT_STATUS)
     created_at = models.DateTimeField(auto_now_add=True)
 
-# Address
 class Address(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='addresses')
     receiver_name = models.CharField(max_length=150)
@@ -94,3 +86,15 @@ class Address(models.Model):
 
     def __str__(self):
         return f"{self.receiver_name} - {self.address_line}"
+
+class ActivityLog(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    action = models.CharField(max_length=255)
+    category = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.action}'
+
+    class Meta:
+        ordering = ['-timestamp']

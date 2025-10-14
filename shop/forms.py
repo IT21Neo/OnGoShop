@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
-from shop.models import Product, Order, User
+from shop.models import Product, Order, User, Category
+from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
 
@@ -29,8 +30,16 @@ class RegisterForm(forms.ModelForm):
         cleaned_data = super().clean()
         password = cleaned_data.get("password")
         confirm = cleaned_data.get("confirm_password")
-        if password and confirm and password != confirm:
-            raise forms.ValidationError("รหัสผ่านทั้งสองช่องต้องตรงกัน")
+
+        if password and confirm:
+            if password != confirm:
+                raise forms.ValidationError("รหัสผ่านทั้งสองช่องต้องตรงกัน")
+            
+            try:
+                validate_password(password)
+            except forms.ValidationError as e:
+                self.add_error('password', e)
+
         return cleaned_data
 
 class LoginForm(AuthenticationForm):
@@ -69,78 +78,96 @@ class GuestCheckoutForm(forms.Form):
     address_line = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), label="ที่อยู่จัดส่ง")
     payment_method = forms.ChoiceField(
         choices=[
-            ('transfer', 'โอนเงินผ่านธนาคาร'),
-            ('cash', 'เก็บเงินปลายทาง'),
-            ('credit_card', 'บัตรเครดิต'),
+            ('transfer', 'Bank Transfer'),
+            ('qr_code', 'QR Code Payment'),
+            ('cash', 'Cash on Delivery'),
         ],
         label="วิธีชำระเงิน"
     )
 
 class ProductForm(forms.ModelForm):
-    class Meta:
-        model = Product
-        fields = ['category', 'name', 'price', 'description', 'stock', 'image']
-        # ...
-
-    def clean_price(self):
-        price = self.cleaned_data.get('price')
-        if price is not None and price < 0:
-            raise forms.ValidationError("ราคาสินค้าต้องไม่เป็นค่าติดลบ!")
-        return price
-    
-    def clean_stock(self):
-        stock = self = self.cleaned_data.get('stock')
-        if stock is not None and stock < 0:
-            raise forms.ValidationError("สต็อกสินค้าต้องไม่เป็นค่าติดลบ!")
-        return stock
-
-class OrderStatusForm(forms.ModelForm):
-    STATUS_CHOICES = [
-        ('pending', 'รอชำระเงิน'),
-        ('paid', 'ชำระเงินแล้ว'),
-        ('shipped', 'จัดส่งแล้ว'),
-        ('delivered', 'จัดส่งสำเร็จ'),
-        ('cancelled', 'ยกเลิกคำสั่งซื้อ'),
-    ]
-
-    status = forms.ChoiceField(
-        choices=STATUS_CHOICES,
-        label="สถานะคำสั่งซื้อ",
-        widget=forms.Select(attrs={'class': 'form-select'})
+    categories = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="หมวดหมู่สินค้า"
     )
 
     class Meta:
+        model = Product
+        fields = ['name', 'description', 'price', 'stock', 'image_url', 'categories']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name', 'description']
+        labels = {
+            'name': 'ชื่อหมวดหมู่',
+            'description': 'คำอธิบาย',
+        }
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'textarea'}),
+            'name': forms.TextInput(attrs={'class': 'input'}),
+        }
+
+
+class OrderStatusForm(forms.ModelForm):
+    
+    class Meta:
         model = Order
         fields = ['status']
+        labels = {
+            'status': "สถานะคำสั่งซื้อ"
+        }
+        widgets = {
+            'status': forms.Select(attrs={'class': 'select is-fullwidth'})
+        }
 
 class UserRoleForm(forms.ModelForm):
     ROLE_CHOICES = [
         ('customer', 'ลูกค้าทั่วไป'),
-        ('seller', 'ผู้ขายสินค้า'),
         ('admin', 'ผู้ดูแลระบบ'),
     ]
 
     role = forms.ChoiceField(
         choices=ROLE_CHOICES,
         label="บทบาทผู้ใช้",
-        widget=forms.Select(attrs={'class': 'form-select'})
+        widget=forms.Select(attrs={'class': 'select is-fullwidth'})
+    )
+    
+    is_staff = forms.BooleanField(
+        required=False, 
+        label="สิทธิ์ Staff (เข้าหน้า Admin)"
     )
 
     class Meta:
         model = User
-        fields = ['role']
+        fields = ['role', 'is_staff']
 
 class ProfileForm(forms.ModelForm):
+    address_line = forms.CharField(
+        label="ที่อยู่สำหรับจัดส่ง", 
+        widget=forms.Textarea(attrs={'rows': 3, 'class': 'textarea'}), 
+        required=False
+    )
+
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email']
+        fields = ['first_name', 'last_name', 'email', 'phone', 'profile_picture']
         labels = {
-            'first_name': 'ชื่อจริง',
+            'first_name': 'ชื่อจริง (ผู้รับ)',
             'last_name': 'นามสกุล',
             'email': 'อีเมล',
+            'phone': 'เบอร์โทรศัพท์',
+            'profile_picture': 'URL รูปโปรไฟล์',
         }
         widgets = {
-            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'input'}),
+            'last_name': forms.TextInput(attrs={'class': 'input'}),
+            'email': forms.EmailInput(attrs={'class': 'input'}),
+            'phone': forms.TextInput(attrs={'class': 'input', 'placeholder': '0812345678'}),
+            'profile_picture': forms.TextInput(attrs={'class': 'input', 'placeholder': 'https://example.com/image.png'}),
         }

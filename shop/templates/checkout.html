@@ -1,51 +1,58 @@
 {% extends 'base.html' %}
 {% block title %}Checkout | OnGoShop{% endblock %}
 {% block content %}
-<h1 class="title">Checkout (ชำระเงิน)</h1>
+<section class="section">
+    <div class="container">
+        <h1 class="title">Checkout (ชำระเงิน)</h1>
+        <div class="columns is-centered">
+            <div class="column is-two-thirds">
+                <form method="POST" class="box">
+                    {% csrf_token %}
+                    
+                    <div class="field">
+                        <label class="label">ชื่อผู้รับ (Receiver Name)</label>
+                        <div class="control">
+                            {{ form.receiver_name.errors }}
+                            <input class="input" type="text" name="receiver_name" value="{{ form.receiver_name.value|default:'' }}" required>
+                        </div>
+                    </div>
 
-<form method="POST" class="box">
-  {% csrf_token %}
-  <div class="field">
-    <label class="label">ชื่อผู้รับ (Receiver Name)</label>
-    <div class="control">
-      <input class="input" type="text" name="receiver_name" required>
-    </div>
-  </div>
+                    <div class="field">
+                        <label class="label">เบอร์โทรศัพท์ (Phone)</label>
+                        <div class="control">
+                             {{ form.phone.errors }}
+                            <input class="input" type="text" name="phone" value="{{ form.phone.value|default:'' }}" required>
+                        </div>
+                    </div>
 
-  <div class="field">
-    <label class="label">เบอร์โทรศัพท์ (Phone)</label>
-    <div class="control">
-      <input class="input" type="text" name="phone" required>
-    </div>
-  </div>
+                    <div class="field">
+                        <label class="label">ที่อยู่จัดส่ง (Address)</label>
+                        <div class="control">
+                             {{ form.address_line.errors }}
+                            <textarea class="textarea" name="address_line" required>{{ form.address_line.value|default:'' }}</textarea>
+                        </div>
+                    </div>
 
-  <div class="field">
-    <label class="label">ที่อยู่จัดส่ง (Address)</label>
-    <div class="control">
-      <textarea class="textarea" name="address_line" required></textarea>
-    </div>
-  </div>
+                    <div class="field">
+                        <label class="label">วิธีการชำระเงิน (Payment Method)</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                {{ form.payment_method }}
+                            </div>
+                        </div>
+                    </div>
 
-  <div class="field">
-    <label class="label">วิธีการชำระเงิน (Payment Method)</label>
-    <div class="control">
-      <div class="select">
-        <select name="payment_method">
-          <option value="credit_card">Credit Card</option>
-          <option value="transfer">Bank Transfer</option>
-          <option value="cash">Cash on Delivery</option>
-        </select>
-      </div>
+                    <div class="field is-grouped mt-5">
+                        <div class="control">
+                            <button type="submit" class="button is-link">ดำเนินการต่อ</button>
+                        </div>
+                        <div class="control">
+                            <a href="{% url 'shop:cart' %}" class="button is-light">กลับไปที่ตะกร้า</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
-
-  <div class="field is-grouped mt-5">
-    <div class="control">
-      <button type="submit" class="button is-link">Confirm Order (ยืนยันสั่งซื้อ)</button>
-    </div>
-    <div class="control">
-      <a href="{% url 'shop:cart' %}" class="button is-light">Back to Cart</a>
-    </div>
-  </div>
-</form>
+</section>
 {% endblock %}

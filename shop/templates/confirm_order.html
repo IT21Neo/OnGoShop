@@ -1,38 +1,58 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}ยืนยันคำสั่งซื้อ | OnGoShop{% endblock %}
 {% block content %}
-<div class="container mt-4">
-  <h2 class="title has-text-light">ยืนยันคำสั่งซื้อ</h2>
+<section class="section">
+    <div class="container">
+        <h1 class="title has-text-light">ยืนยันคำสั่งซื้อ</h1>
+        <div class="columns">
+            <div class="column is-7">
+                <div class="box has-background-dark p-5">
+                    <h4 class="title is-4 has-text-light">ข้อมูลการจัดส่ง</h4>
+                    <p><strong>ชื่อผู้รับ:</strong> {{ checkout_info.receiver_name }}</p>
+                    <p><strong>เบอร์โทร:</strong> {{ checkout_info.phone }}</p>
+                    <p><strong>ที่อยู่:</strong> {{ checkout_info.address_line }}</p>
+                    <p><strong>ชำระเงินด้วย:</strong> {{ checkout_info.payment_method|title }}</p>
+                    <hr class="has-background-grey-lighter">
+                    <h4 class="title is-4 has-text-light">รายการสินค้า</h4>
+                    <ul>
+                        {% for item in cart_items %}
+                        <li class="has-text-white">
+                            {{ item.product.name }} × {{ item.quantity }} — {{ item.product.price }} บาท
+                        </li>
+                        {% endfor %}
+                    </ul>
+                     <hr class="has-background-grey-lighter">
+                     <h3 class="title is-3 has-text-right has-text-white">ยอดรวม: {{ total_price }} บาท</h3>
+                </div>
+            </div>
 
-  <div class="box has-background-dark p-5">
-    <h4 class="has-text-light">ข้อมูลการจัดส่ง</h4>
-    <p>ชื่อผู้รับ: {{ checkout_info.receiver_name }}</p>
-    <p>เบอร์โทร: {{ checkout_info.phone }}</p>
-    <p>ที่อยู่: {{ checkout_info.address_line }}</p>
-    <p>ชำระเงินด้วย: {{ checkout_info.payment_method }}</p>
-
-    <hr class="has-background-grey-lighter">
-
-    <h4 class="has-text-light">รายการสินค้า</h4>
-    <ul>
-      {% for item in cart.cartitem_set.all %}
-      <li class="has-text-white">
-        {{ item.product.name }} × {{ item.quantity }} — {{ item.product.price }} บาท
-      </li>
-      {% endfor %}
-    </ul>
-
-    {% if checkout_info.payment_method == 'transfer' %}
-      <div class="has-text-centered mt-5">
-        <h5 class="has-text-light mb-2">📸 สแกน QR เพื่อชำระเงิน</h5>
-        <img src="{% static img:qr_payment.png %}" alt="QR Payment" style="max-width: 250px; border-radius: 10px;">
-      </div>
-    {% endif %}
-
-    <form method="post" class="has-text-centered mt-4">
-      {% csrf_token %}
-      <button type="submit" class="button is-magenta is-medium">ยืนยันคำสั่งซื้อ</button>
-    </form>
-  </div>
-</div>
+            <div class="column is-5">
+                <div class="box">
+                    {% if checkout_info.payment_method == 'qr_code' or checkout_info.payment_method == 'transfer' %}
+                    <div class="has-text-centered">
+                        <h5 class="title is-5 mb-3">📸 สแกน QR เพื่อชำระเงิน</h5>
+                        <p>กรุณาชำระเงินภายใน 15 นาที</p>
+                        <figure class="image is-square">
+                           <img src="{% static 'img/qr_payment.png' %}" alt="QR Payment">
+                        </figure>
+                        <form method="post" class="mt-4">
+                            {% csrf_token %}
+                            <p class="mb-3">หลังจากชำระเงินแล้ว กรุณากดยืนยัน</p>
+                            <button type="submit" name="action" value="paid" class="button is-success is-fullwidth">ฉันชำระเงินแล้ว</button>
+                        </form>
+                    </div>
+                     <hr>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                         <p class="mb-3 has-text-centered">หรือเลือกยืนยันคำสั่งซื้อเพื่อชำระเงินภายหลัง</p>
+                        <button type="submit" name="action" value="pay_later" class="button is-magenta is-fullwidth">ยืนยันคำสั่งซื้อ (ชำระภายหลัง)</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

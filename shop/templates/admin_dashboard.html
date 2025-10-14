@@ -1,14 +1,64 @@
-<h2>Admin Dashboard</h2>
+{% extends "admin_base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="columns is-multiline">
+      <div class="column is-one-quarter">
+        <div class="box has-background-info has-text-white has-text-centered">
+          <p class="title has-text-white">{{ total_users }}</p>
+          <p class="subtitle has-text-white">👤 สมาชิกทั้งหมด</p>
+        </div>
+      </div>
+      <div class="column is-one-quarter">
+        <div class="box has-background-primary has-text-white has-text-centered">
+          <p class="title has-text-white">{{ total_products }}</p>
+          <p class="subtitle has-text-white">📦 สินค้าทั้งหมด</p>
+        </div>
+      </div>
+      <div class="column is-one-quarter">
+        <div class="box has-background-link has-text-white has-text-centered">
+          <p class="title has-text-white">{{ total_orders }}</p>
+          <p class="subtitle has-text-white">🧾 คำสั่งซื้อทั้งหมด</p>
+        </div>
+      </div>
+      <div class="column is-one-quarter">
+        <div class="box has-background-success has-text-white has-text-centered">
+          <p class="title has-text-white">{{ total_sales|floatformat:2 }} ฿</p>
+          <p class="subtitle has-text-white">💰 ยอดขายรวม</p>
+        </div>
+      </div>
+    </div>
 
-<div class="summary">
-  <p>👤 สมาชิกทั้งหมด: {{ total_users }}</p>
-  <p>📦 สินค้าทั้งหมด: {{ total_products }}</p>
-  <p>🧾 คำสั่งซื้อทั้งหมด: {{ total_orders }}</p>
-  <p>💰 ยอดขายรวม: {{ total_sales }} บาท</p>
-</div>
-
-<div class="mt-4">
-  <a href="{% url 'shop:admin_product_list' %}" class="btn btn-primary">จัดการสินค้า</a>
-  <a href="{% url 'shop:admin_order_list' %}" class="btn btn-success">จัดการคำสั่งซื้อ</a>
-  <a href="{% url 'shop:admin_user_list' %}" class="btn btn-warning">จัดการสมาชิก</a>
-</div>
+    <div class="mt-5">
+      <h2 class="subtitle">ประวัติการแก้ไขล่าสุด</h2>
+      <div class="box">
+        <table class="table is-fullwidth is-striped is-hoverable">
+          <thead>
+            <tr>
+              <th><abbr title="Date and Time">วัน-เวลา</abbr></th>
+              <th>รายการ</th>
+              <th>แอดมิน</th>
+              <th>หมวดการแก้ไข</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in activity_logs %}
+            <tr>
+              <td>{{ log.timestamp|date:"d/m/Y H:i" }}</td>
+              <td>{{ log.action }}</td>
+              <td>{{ log.user.username }}</td>
+              <td><span class="tag is-info is-light">{{ log.category }}</span></td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="has-text-centered">ยังไม่มีประวัติการแก้ไข</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    </div>
+</section>
+{% endblock %}

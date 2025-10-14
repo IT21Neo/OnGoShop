@@ -1,8 +1,32 @@
-<!-- shop/templates/profile.html -->
 {% extends 'base.html' %}
+{% block title %}โปรไฟล์ของฉัน{% endblock %}
 {% block content %}
-<div class="container mt-5 text-center">
-  <h1 class="text-2xl font-bold text-white">โปรไฟล์ของคุณ</h1>
-  <p class="text-gray-300 mt-2">ยินดีต้อนรับ {{ user.username }}</p>
-</div>
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-half">
+        <div class="box">
+          <h1 class="title has-text-centered">โปรไฟล์ของฉัน</h1>
+          <hr>
+          <p><strong>Username:</strong> {{ user.username }}</p>
+          <p><strong>ชื่อ-นามสกุล:</strong> {{ user.get_full_name|default:"-" }}</p>
+          <p><strong>Email:</strong> {{ user.email|default:"-" }}</p>
+          <p><strong>เบอร์โทร:</strong> {{ user.phone|default:"-" }}</p>
+          <p><strong>อายุ:</strong> {{ user.age|default:"-" }}</p>
+          <hr>
+          <div class="buttons is-centered">
+            <a href="{% url 'shop:profile_edit' %}" class="button is-primary">
+                <span class="icon">✏️</span>
+                <span>แก้ไขข้อมูล</span>
+            </a>
+            <a href="{% url 'shop:password_change' %}" class="button is-warning">
+                <span class="icon">🔒</span>
+                <span>เปลี่ยนรหัสผ่าน</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}

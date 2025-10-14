@@ -5,6 +5,14 @@
   <div class="container">
     <h1 class="title">Order #{{ order.id }}</h1>
 
+    <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
+        <h1 class="title mb-0">รายละเอียดคำสั่งซื้อ #{{ order.id }}</h1>
+        <a href="{% url 'shop:my_orders' %}" class="button is-light">
+            <span class="icon"><i class="fas fa-arrow-left"></i></span>
+            <span>กลับไปที่รายการสั่งซื้อ</span>
+        </a>
+    </div>
+
     <div class="box">
       <p><strong>วันที่สั่งซื้อ:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
       <p><strong>สถานะ:</strong> {{ order.status }}</p>

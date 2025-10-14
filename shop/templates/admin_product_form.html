@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "admin_base.html" %}
 {% block title %}{{ title }} | OnGoShop{% endblock %}
 {% block content %}
 <section class="section">
@@ -32,6 +32,13 @@
         <label class="label">สต็อก</label>
         <div class="control">
           <input class="input" type="number" name="stock" value="{{ form.stock.value|default:0 }}" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">หมวดหมู่สินค้า</label>
+        <div class="control">
+          {{ form.categories }}
         </div>
       </div>
 

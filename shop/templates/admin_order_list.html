@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
 {% block title %}จัดการคำสั่งซื้อ{% endblock %}
 {% block content %}
 <section class="section">
@@ -13,24 +13,33 @@
           <th>รวม (บาท)</th>
           <th>สถานะ</th>
           <th>วันที่</th>
-          <th>การจัดการ</th>
+          <th class="has-text-centered">การจัดการ</th>
         </tr>
       </thead>
       <tbody>
         {% for order in orders %}
         <tr>
           <td>{{ order.id }}</td>
-          <td>{{ order.user.username if order.user else "Guest" }}</td>
+          <td>{{ order.user.username|default:"Guest" }}</td>
           <td>{{ order.items.count }}</td>
           <td>{{ order.total_price }}</td>
           <td>{{ order.get_status_display }}</td>
           <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
-          <td>
-            <a class="button is-small is-info" href="{% url 'shop:admin_order_detail' order.id %}">รายละเอียด</a>
+          <td class="has-text-centered" style="white-space: nowrap;">
+            <a class="button is-small is-info" href="{% url 'shop:admin_order_detail' order.id %}">
+              รายละเอียด
+            </a>
+            <form action="{% url 'shop:admin_order_delete' order.id %}" method="POST" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="button is-small is-danger"
+                onclick="return confirm('คุณต้องการลบคำสั่งซื้อ #{{ order.id }} นี้หรือไม่?')">
+                ✖
+              </button>
+            </form>
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="7">ยังไม่มีคำสั่งซื้อ</td></tr>
+        <tr><td colspan="7" class="has-text-centered">ยังไม่มีคำสั่งซื้อ</td></tr>
         {% endfor %}
       </tbody>
     </table>

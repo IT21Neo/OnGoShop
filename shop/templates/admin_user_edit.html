@@ -1,19 +1,47 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
 {% block title %}แก้ไขผู้ใช้ {{ user_obj.username }}{% endblock %}
 {% block content %}
 <section class="section">
-  <div class="container" style="max-width:640px;">
-    <h1 class="title">แก้ไขผู้ใช้: {{ user_obj.username }}</h1>
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <div class="field">
-        <div class="control">
-          <button class="button is-primary" type="submit">บันทึก</button>
-          <a class="button is-light" href="{% url 'shop:admin_user_list' %}">ยกเลิก</a>
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-half">
+        <div class="box">
+          <h1 class="title has-text-centered">แก้ไขผู้ใช้: {{ user_obj.username }}</h1>
+          <form method="post">
+            {% csrf_token %}
+            
+            <div class="field">
+              <label class="label">{{ form.role.label }}</label>
+              <div class="control">
+                <div class="select is-fullwidth">
+                  {{ form.role }}
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="control">
+                <label class="checkbox">
+                  {{ form.is_staff }}
+                  {{ form.is_staff.label }}
+                </label>
+              </div>
+            </div>
+            
+            <hr>
+
+            <div class="field is-grouped">
+              <div class="control">
+                <button class="button is-primary" type="submit">บันทึกการเปลี่ยนแปลง</button>
+              </div>
+              <div class="control">
+                <a class="button is-light" href="{% url 'shop:admin_user_list' %}">ยกเลิก</a>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
-    </form>
+    </div>
   </div>
 </section>
 {% endblock %}

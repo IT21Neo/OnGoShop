@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}แก้ไขโปรไฟล์{% endblock %}
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="columns is-centered">
+            <div class="column is-half">
+                <div class="box">
+                    <h1 class="title has-text-centered">แก้ไขโปรไฟล์และที่อยู่</h1>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="field">
+                            <label class="label">{{ form.first_name.label }}</label>
+                            <div class="control">
+                                {{ form.first_name }}
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">{{ form.last_name.label }}</label>
+                            <div class="control">
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">{{ form.email.label }}</label>
+                            <div class="control">
+                                {{ form.email }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="field">
+                            <label class="label">{{ form.phone.label }}</label>
+                            <div class="control">
+                                {{ form.phone }}
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">{{ form.address_line.label }}</label>
+                            <div class="control">
+                                {{ form.address_line }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="field">
+                            <label class="label">{{ form.profile_picture.label }}</label>
+                            <div class="control">
+                                {{ form.profile_picture }}
+                            </div>
+                        </div>
+                        <div class="field is-grouped mt-5">
+                            <div class="control">
+                                <button class="button is-primary" type="submit">บันทึกข้อมูล</button>
+                            </div>
+                            <div class="control">
+                                <a class="button is-light" href="{% url 'shop:profile' %}">ยกเลิก</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin Panel{% endblock %} | OnGoShop</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background-color: #071040;
+      color: #aa5959;
+      display: flex;
+      flex-direction: column;
+    }
+    .navbar {
+      background-color: #363636;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .navbar-item, .navbar-link {
+      color: #fff !important;
+    }
+    .navbar-item:hover, .navbar-link:hover {
+        background-color: #4a4a4a !important;
+    }
+    main {
+      flex: 1;
+      padding-top: 5rem;
+      padding-bottom: 2rem;
+    }
+    footer.footer {
+      background-color: #363636;
+      color: #fff;
+      padding: 1rem;
+      margin-top: auto;
+    }
+    .notification.is-fadeout {
+        opacity: 0;
+        transition: opacity 0.5s ease-out;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item has-text-weight-bold" href="{% url 'shop:admin_dashboard' %}">
+        OnGoShop Admin
+      </a>
+    </div>
+    <div class="navbar-menu">
+      <div class="navbar-start">
+        <a class="navbar-item" href="{% url 'shop:admin_dashboard' %}">Dashboard</a>
+        <a class="navbar-item" href="{% url 'shop:admin_product_list' %}">จัดการสินค้า</a>
+        <a class="navbar-item" href="{% url 'shop:admin_order_list' %}">จัดการคำสั่งซื้อ</a>
+        <a class="navbar-item" href="{% url 'shop:admin_user_list' %}">จัดการสมาชิก</a>
+      </div>
+      <div class="navbar-end">
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">
+            {% if user.profile_picture %}
+              <figure class="image is-24x24 mr-2">
+                <img class="is-rounded" src="{{ user.profile_picture }}" alt="Profile" style="object-fit: cover; height: 24px; width: 24px;">
+              </figure>
+            {% endif %}
+            สวัสดี, {{ user.username }}
+          </a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="{% url 'shop:profile' %}">
+              โปรไฟล์ของฉัน
+            </a>
+            <hr class="navbar-divider">
+            <a class="navbar-item has-text-danger" href="{% url 'shop:logout' %}">
+              ออกจากระบบ
+            </a>
+          </div>
+        </div>
+        </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container">
+       {% if messages %}
+        {% for message in messages %}
+          <div class="notification is-{{ message.tags }}" role="alert">
+            <button class="delete"></button>
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+        const $notification = $delete.parentNode;
+        $delete.addEventListener('click', () => {
+          $notification.parentNode.removeChild($notification);
+        });
+      });
+      
+      const notifications = document.querySelectorAll('.notification') || [];
+      notifications.forEach(($notification) => {
+        setTimeout(() => {
+            $notification.classList.add('is-fadeout');
+            setTimeout(() => {
+                 if ($notification.parentNode) {
+                    $notification.parentNode.removeChild($notification);
+                 }
+            }, 500);
+        }, 5000);
+      });
+    });
+  </script>
+
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>© 2025 OnGoShop Admin Panel</p>
+    </div>
+  </footer>
+</body>
+</html>

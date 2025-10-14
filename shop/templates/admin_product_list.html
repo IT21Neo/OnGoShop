@@ -1,10 +1,11 @@
-{% extends 'base.html' %}
+{% extends "admin_base.html" %}
 {% block title %}Admin - Manage Products | OnGoShop{% endblock %}
 {% block content %}
 <section class="section">
   <div class="container">
     <h1 class="title">จัดการสินค้า (Manage Products)</h1>
 
+    <a href="{% url 'shop:admin_category_list' %}" class="button is-link is-warning mb-3">จัดการหมวดหมู่</a>
     <a href="{% url 'shop:admin_product_add' %}" class="button is-primary mb-3">+ เพิ่มสินค้าใหม่</a>
 
     {% if products %}

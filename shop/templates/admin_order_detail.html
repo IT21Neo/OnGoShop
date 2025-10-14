@@ -1,45 +1,79 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
 {% block title %}Order #{{ order.id }}{% endblock %}
 {% block content %}
 <section class="section">
   <div class="container">
-    <h1 class="title">คำสั่งซื้อ #{{ order.id }}</h1>
-    <p><strong>ลูกค้า:</strong> {{ order.user.username if order.user else "Guest" }}</p>
-    <p><strong>รวม:</strong> {{ order.total_price }} บาท</p>
-    <p><strong>สถานะ:</strong> {{ order.get_status_display }}</p>
-
-    <h2 class="subtitle mt-4">รายการสินค้า</h2>
-    <table class="table is-fullwidth">
-      <thead><tr><th>สินค้า</th><th>จำนวน</th><th>ราคาต่อหน่วย</th></tr></thead>
-      <tbody>
-        {% for it in order.items.all %}
-          <tr>
-            <td>{{ it.product.name if it.product else "(ลบไปแล้ว)" }}</td>
-            <td>{{ it.quantity }}</td>
-            <td>{{ it.unit_price }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-
-    <h2 class="subtitle mt-4">อัพเดตสถานะ</h2>
-    <form method="post" style="max-width:480px;">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <div class="field is-grouped">
-        <div class="control">
-          <button class="button is-primary" type="submit">อัพเดต</button>
+    <h1 class="title">รายละเอียดคำสั่งซื้อ #{{ order.id }}</h1>
+    
+    <div class="columns">
+      <div class="column is-7">
+        <div class="box">
+          <h2 class="subtitle"><strong>ข้อมูลลูกค้าและสถานะ</strong></h2>
+          <p><strong>ลูกค้า:</strong> {{ order.user.username|default:"Guest" }}</p>
+          <p><strong>ยอดรวม:</strong> <span class="has-text-weight-bold has-text-success">{{ order.total_price }} บาท</span></p>
+          <p><strong>สถานะปัจจุบัน:</strong> <span class="tag is-info is-medium">{{ order.get_status_display }}</span></p>
+          <p><strong>วันที่สั่งซื้อ:</strong> {{ order.created_at|date:"d M Y, H:i" }}</p>
         </div>
-        <div class="control">
-          <form method="post" action="{% url 'shop:admin_order_cancel' order.id %}">
-            {% csrf_token %}
-            <button class="button is-danger" type="submit" onclick="return confirm('ยืนยันการยกเลิกคำสั่งซื้อ?')">ยกเลิก</button>
-          </form>
+        <div class="box mt-4">
+          <h2 class="subtitle"><strong>รายการสินค้า</strong></h2>
+          <table class="table is-fullwidth is-striped">
+            <thead>
+              <tr>
+                <th>สินค้า</th>
+                <th class="has-text-centered">จำนวน</th>
+                <th class="has-text-right">ราคาต่อหน่วย</th>
+                <th class="has-text-right">ราคารวม</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for it in order.items.all %}
+                <tr>
+                  <td>{{ it.product.name|default:"(สินค้าถูกลบไปแล้ว)" }}</td>
+                  <td class="has-text-centered">{{ it.quantity }}</td>
+                  <td class="has-text-right">{{ it.unit_price }}</td>
+                  <td class="has-text-right">{{ it.quantity|add:0|floatformat:0|add:it.unit_price }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
       </div>
-    </form>
 
-    <a class="button mt-4" href="{% url 'shop:admin_order_list' %}">กลับไป</a>
+      <div class="column is-5">
+        <div class="box">
+          <h2 class="subtitle"><strong>จัดการคำสั่งซื้อ</strong></h2>
+          <form method="post">
+            {% csrf_token %}
+            <div class="field">
+              <label class="label">{{ form.status.label }}</label>
+              <div class="control">
+                <div class="select is-fullwidth">
+                  {{ form.status }}
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <button class="button is-primary is-fullwidth" type="submit">
+                <span class="icon">🔄</span>
+                <span>อัพเดตสถานะ</span>
+              </button>
+            </div>
+          </form>
+          <hr>
+          <form method="post" action="{% url 'shop:admin_order_cancel' order.id %}" onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคำสั่งซื้อนี้?')">
+            {% csrf_token %}
+            <button class="button is-danger is-fullwidth is-light" type="submit">
+              <span class="icon">❌</span>
+              <span>ยกเลิกคำสั่งซื้อ</span>
+            </button>
+          </form>
+        </div>
+        <a class="button mt-4 is-fullwidth" href="{% url 'shop:admin_order_list' %}">
+            <span class="icon">⬅️</span>
+            <span>กลับไปที่รายการคำสั่งซื้อ</span>
+        </a>
+      </div>
+    </div>
   </div>
 </section>
 {% endblock %}

@@ -1,0 +1,57 @@
+{% extends "admin_base.html" %}
+{% block title %}Admin Profile{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-two-thirds">
+        <div class="card">
+          <header class="card-header has-background-dark">
+            <p class="card-header-title has-text-white">
+              <span class="icon mr-2"><i class="fas fa-user-shield"></i></span>
+              โปรไฟล์ผู้ดูแลระบบ
+            </p>
+          </header>
+          <div class="card-content">
+            <div class="content">
+              <div class="field">
+                <label class="label">Username</label>
+                <p>{{ user.username }}</p>
+              </div>
+              <div class="field">
+                <label class="label">Email</label>
+                <p>{{ user.email|default:"-" }}</p>
+              </div>
+              <div class="field">
+                <label class="label">ชื่อ-นามสกุล</label>
+                <p>{{ user.get_full_name|default:"-" }}</p>
+              </div>
+              <div class="field">
+                <label class="label">Role & Status</label>
+                <div class="tags">
+                  <span class="tag is-danger is-medium">{{ user.role|title }}</span>
+                  {% if user.is_staff %}
+                    <span class="tag is-success is-medium">Staff</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <hr>
+            <div class="buttons">
+              <a href="{% url 'shop:profile_edit' %}" class="button is-primary">
+                <span class="icon">✏️</span>
+                <span>แก้ไขข้อมูล</span>
+              </a>
+              <a href="{% url 'shop:password_change' %}" class="button is-warning">
+                <span class="icon">🔒</span>
+                <span>เปลี่ยนรหัสผ่าน</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
+{% endblock %}

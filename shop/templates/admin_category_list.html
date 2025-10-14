@@ -1,0 +1,42 @@
+{% extends "admin_base.html" %}
+{% block title %}จัดการหมวดหมู่สินค้า{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
+      <h1 class="title mb-0">จัดการหมวดหมู่สินค้า</h1>
+      <a href="{% url 'shop:admin_category_add' %}" class="button is-primary">+ เพิ่มหมวดหมู่ใหม่</a>
+    </div>
+
+    <div class="box">
+      <table class="table is-fullwidth is-striped is-hoverable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>ชื่อหมวดหมู่</th>
+            <th class="has-text-right">การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in categories %}
+          <tr>
+            <td>{{ cat.id }}</td>
+            <td>{{ cat.name }}</td>
+            <td class="has-text-right">
+              <div class="buttons is-right">
+                <a href="{% url 'shop:admin_category_edit' cat.id %}" class="button is-small is-info is-light">แก้ไข</a>
+                <a href="{% url 'shop:admin_category_delete' cat.id %}" class="button is-small is-danger is-light">ลบ</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="has-text-centered">ยังไม่มีหมวดหมู่ในระบบ</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
