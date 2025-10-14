@@ -79,10 +79,20 @@ class GuestCheckoutForm(forms.Form):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'price', 'stock', 'image_url']
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
-        }
+        fields = ['category', 'name', 'price', 'description', 'stock', 'image']
+        # ...
+
+    def clean_price(self):
+        price = self.cleaned_data.get('price')
+        if price is not None and price < 0:
+            raise forms.ValidationError("ราคาสินค้าต้องไม่เป็นค่าติดลบ!")
+        return price
+    
+    def clean_stock(self):
+        stock = self = self.cleaned_data.get('stock')
+        if stock is not None and stock < 0:
+            raise forms.ValidationError("สต็อกสินค้าต้องไม่เป็นค่าติดลบ!")
+        return stock
 
 class OrderStatusForm(forms.ModelForm):
     STATUS_CHOICES = [
