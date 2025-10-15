@@ -394,7 +394,7 @@ def product_detail(request, pk):
 
 # cart part
 def _get_cart(request):
-    cart = Cart.objects.get_or_create(user=request.user)
+    cart, _ = Cart.objects.get_or_create(user=request.user)
     return cart
 
 
