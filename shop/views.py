@@ -17,9 +17,9 @@ def admin_dashboard(request):
         messages.error(request, "คุณไม่มีสิทธิ์เข้าถึงหน้านี้")
         return redirect('shop:product_list')
 
-    total_users = User.objects.count()
-    total_products = Product.objects.count()
-    total_orders = Order.objects.count()
+    total_users = User.objects.all().count()
+    total_products = Product.objects.all().count()
+    total_orders = Order.objects.all().count()
     total_sales = Order.objects.filter(status='paid').aggregate(total=Sum('total_price'))['total'] or 0
     activity_logs = ActivityLog.objects.select_related('user').order_by('-timestamp')[:10]
 
@@ -347,7 +347,6 @@ def profile_edit(request):
     return render(request, template_name, {'form': form})
 
 
-
 # Product part
 def product_list(request, category_id=None):
     products = Product.objects.all()
@@ -395,7 +394,7 @@ def product_detail(request, pk):
 
 # cart part
 def _get_cart(request):
-    cart, _ = Cart.objects.get_or_create(user=request.user)
+    cart = Cart.objects.get_or_create(user=request.user)
     return cart
 
 
