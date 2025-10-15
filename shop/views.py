@@ -302,7 +302,6 @@ def logout_view(request):
 
 # Profile part
 def profile_view(request):
-    """แสดงหน้าข้อมูลโปรไฟล์ของผู้ใช้"""
     if not request.user.is_authenticated:
         return redirect('shop:login')
 
@@ -313,7 +312,6 @@ def profile_view(request):
 
 
 def profile_edit(request):
-    """แก้ไขข้อมูลโปรไฟล์"""
     if not request.user.is_authenticated:
         return redirect('shop:login')
 
@@ -397,23 +395,14 @@ def product_detail(request, pk):
 
 # cart part
 def _get_cart(request):
-    """คืนค่า cart ของ user หรือ session ปัจจุบัน"""
-    if request.user.is_authenticated:
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-        return cart
-
-    session_key = request.session.session_key
-    if not session_key:
-        request.session.create()
-        session_key = request.session.session_key
-
-    cart, _ = Cart.objects.get_or_create(session_key=session_key, user=None)
+    cart, _ = Cart.objects.get_or_create(user=request.user)
     return cart
 
 
 def add_to_cart(request):
-    if request.method != "POST":
-        return redirect("shop:product_list")
+    if not request.user.is_authenticated:
+        messages.warning(request, "กรุณาเข้าสู่ระบบก่อนเพิ่มสินค้าลงตะกร้า")
+        return redirect("shop:login")
 
     product_id = request.POST.get("product_id")
     quantity = int(request.POST.get("quantity", 1))
@@ -633,7 +622,6 @@ def retry_payment(request, order_id):
 # Order Part
 
 def my_orders(request):
-    """แสดงคำสั่งซื้อทั้งหมดของผู้ใช้"""
     if not request.user.is_authenticated:
         return redirect('shop:login')
 
@@ -641,7 +629,6 @@ def my_orders(request):
     return render(request, 'my_orders.html', {'orders': orders})
 
 def my_order_detail(request, order_id):
-    """แสดงรายละเอียดคำสั่งซื้อแต่ละรายการ"""
     if not request.user.is_authenticated:
         return redirect('shop:login')
 
