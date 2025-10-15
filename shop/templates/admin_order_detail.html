@@ -31,7 +31,7 @@
                   <td>{{ it.product.name|default:"(สินค้าถูกลบไปแล้ว)" }}</td>
                   <td class="has-text-centered">{{ it.quantity }}</td>
                   <td class="has-text-right">{{ it.unit_price }}</td>
-                  <td class="has-text-right">{{ it.quantity|add:0|floatformat:0|add:it.unit_price }}</td>
+                  <td class="has-text-right">{{ it.subtotal }}</td>
                 </tr>
               {% endfor %}
             </tbody>

@@ -1,24 +1,18 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}ยืนยันคำสั่งซื้อ | OnGoShop{% endblock %}
+{% block title %}ชำระเงินสำหรับคำสั่งซื้อ | OnGoShop{% endblock %}
 {% block content %}
 <section class="section">
     <div class="container">
-        <h1 class="title has-text-light">ยืนยันคำสั่งซื้อ</h1>
+        <h1 class="title has-text-light">ชำระเงินสำหรับคำสั่งซื้อ #{{ order.id }}</h1>
         <div class="columns">
             <div class="column is-7">
                 <div class="box has-background-dark p-5">
-                    <h4 class="title is-4 has-text-light">ข้อมูลการจัดส่ง</h4>
-                    <p><strong>ชื่อผู้รับ:</strong> {{ checkout_info.receiver_name }}</p>
-                    <p><strong>เบอร์โทร:</strong> {{ checkout_info.phone }}</p>
-                    <p><strong>ที่อยู่:</strong> {{ checkout_info.address_line }}</p>
-                    <p><strong>ชำระเงินด้วย:</strong> {{ checkout_info.payment_method|title }}</p>
-                    <hr class="has-background-grey-lighter">
                     <h4 class="title is-4 has-text-light">รายการสินค้า</h4>
                     <ul>
                         {% for item in cart_items %}
                         <li class="has-text-white">
-                            {{ item.product.name }} × {{ item.quantity }} — {{ item.product.price }} บาท
+                            {{ item.product.name }} × {{ item.quantity }} — {{ item.unit_price }} บาท
                         </li>
                         {% endfor %}
                     </ul>
@@ -29,7 +23,7 @@
 
             <div class="column is-5">
                 <div class="box">
-                    {% if checkout_info.payment_method == 'qr_code' or checkout_info.payment_method == 'transfer' %}
+                    {% if payment_method == 'qr_code' or payment_method == 'transfer' %}
                     <div class="has-text-centered">
                         <h5 class="title is-5 mb-3">📸 สแกน QR เพื่อชำระเงิน</h5>
                         <p>กรุณาชำระเงินภายใน 15 นาที</p>
@@ -42,19 +36,29 @@
                             <button type="submit" name="action" value="paid" id="paid-button" class="button is-success is-fullwidth" disabled>ฉันชำระเงินแล้ว</button>
                         </form>
                     </div>
-                     <hr>
+                    {% else %}
+                    <div class="has-text-centered">
+                        <h5 class="title is-5 mb-3">ยืนยันการชำระเงิน</h5>
+                         <form method="post" class="mt-4">
+                            {% csrf_token %}
+                            <p class="mb-3">กรุณากดยืนยันเพื่อชำระเงินสำหรับคำสั่งซื้อนี้</p>
+                            <button type="submit" name="action" value="paid" id="paid-button" class="button is-success is-fullwidth" disabled>ยืนยันการชำระเงิน</button>
+                        </form>
+                    </div>
                     {% endif %}
-                    
-                    <form method="post">
-                        {% csrf_token %}
-                         <p class="mb-3 has-text-centered">หรือเลือกยืนยันคำสั่งซื้อเพื่อชำระเงินภายหลัง</p>
-                        <button type="submit" name="action" value="pay_later" class="button is-magenta is-fullwidth">ยืนยันคำสั่งซื้อ (ชำระภายหลัง)</button>
-                    </form>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<div style="position: fixed; bottom: 2rem; left: 2rem; z-index: 100;">
+    <a href="{% url 'shop:my_order_detail' order.id %}" class="button is-light is-medium">
+        <span class="icon"><i class="fas fa-arrow-left"></i></span>
+        <span>กลับ</span>
+    </a>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const paidButton = document.getElementById('paid-button');

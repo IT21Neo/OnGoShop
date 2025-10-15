@@ -547,6 +547,7 @@ def confirm_order(request):
     total_price = sum(item.quantity * item.product.price for item in items)
 
     if request.method == 'POST':
+        action = request.POST.get('action')
         try:
             order = Order.objects.create(
                 user=request.user,
@@ -577,7 +578,11 @@ def confirm_order(request):
                 del request.session['checkout_info']
 
             messages.success(request, "ยืนยันคำสั่งซื้อสำเร็จแล้ว!")
-            return redirect('shop:order_success')
+
+            if action == 'pay_later':
+                return redirect('shop:product_list')
+            else:
+                return redirect('shop:order_success')
 
         except Exception as e:
             messages.error(request, f"เกิดข้อผิดพลาด: {e}")
@@ -587,6 +592,41 @@ def confirm_order(request):
         'checkout_info': checkout_info,
         'cart_items': items,
         'total_price': total_price
+    })
+
+@transaction.atomic
+def retry_payment(request, order_id):
+    if not request.user.is_authenticated:
+        return redirect("shop:login")
+
+    try:
+        order = Order.objects.get(id=order_id, user=request.user)
+    except Order.DoesNotExist:
+        messages.error(request, "ไม่พบคำสั่งซื้อนี้")
+        return redirect('shop:my_orders')
+
+    if order.status != 'pending':
+        messages.warning(request, "คำสั่งซื้อนี้ได้ชำระเงินแล้ว หรือถูกยกเลิกไปแล้ว")
+        return redirect('shop:my_order_detail', order_id=order.id)
+
+    items = order.items.select_related('product')
+    
+    if request.method == 'POST':
+        order.status = 'paid'
+        order.save()
+        Payment.objects.filter(order=order).update(status='success')
+        
+        messages.success(request, f"ชำระเงินสำหรับคำสั่งซื้อ #{order.id} สำเร็จแล้ว!")
+        return redirect('shop:order_success')
+
+    payment = order.payments.first()
+    payment_method = payment.method if payment else 'transfer'
+
+    return render(request, 'retry_payment.html', {
+        'order': order,
+        'cart_items': items,
+        'total_price': order.total_price,
+        'payment_method': payment_method
     })
 
 

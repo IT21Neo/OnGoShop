@@ -65,6 +65,10 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField()
     unit_price = models.PositiveIntegerField()
 
+    @property
+    def subtotal(self):
+        return self.quantity * self.unit_price
+
 class Payment(models.Model):
     PAYMENT_METHODS = [('credit_card','credit_card'), ('transfer','transfer'), ('cash','cash')]
     PAYMENT_STATUS = [('pending','รอการยืนยัน'), ('success','สำเร็จแล้ว'), ('cancelled','ยกเลิก')]

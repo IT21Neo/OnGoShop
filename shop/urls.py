@@ -28,6 +28,7 @@ urlpatterns = [
     path('order/success/', views.order_success, name='order_success'),
     path('orders/', views.my_orders, name='my_orders'),
     path('orders/<int:order_id>/', views.my_order_detail, name='my_order_detail'),
+    path('order/<int:order_id>/pay/', views.retry_payment, name='retry_payment'),
     path('order/confirm/', views.confirm_order, name='confirm_order'),
 
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
